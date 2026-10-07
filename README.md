@@ -10,7 +10,9 @@ stepreel render 我的装配体.STEP
 - 支持 SolidWorks、Fusion 360、Creo、Inventor、UG 等导出的 STEP / STP
 - 按零件名自动分材质（碳纤维、铝、钢、尼龙、塑料……），中英文名都认
 - 自动判断爆炸方向，紧固件先飞、外层先出、内层后出
-- 自动构图，镜头环绕推拉，工作室灯光
+- 自动构图；5 种运镜（环绕、英雄仰拍、俯视、转台、细节揭幕）
+- 4 种打光（轮廓光、柔光棚、单灯戏剧、霓虹）和 4 种调色
+- 3 种拆解方式：分层拆开、向四周散开、逐个拆解
 - 字幕、配乐、音效全部内置，无需素材
 - 一个 YAML 文件微调一切；也可以导出 .blend 用 Blender 手动精修
 - 自带 Claude Code skill：用中文描述想要的效果，AI 帮你改配置
@@ -59,7 +61,11 @@ stepreel ui                                    # 打开网页界面
 只写和默认不同的部分：
 
 ```yaml
-style: dark-studio            # dark-studio | clean-white | tech-blue
+style: dark-studio            # 背景：dark-studio | clean-white | tech-blue
+lighting: rim                 # 打光：rim | softbox | dramatic | neon
+grade: cool                   # 调色：neutral | contrast | cool | warm
+camera:
+  preset: hero                # 运镜：orbit | hero | topdown | turntable | reveal
 
 explode:
   spread: 1.2                 # 炸开得更开

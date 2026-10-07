@@ -108,3 +108,38 @@ def draw_titles(img, t, titles, style, font_cfg, accent=None):
             d.text((x - bx[0], y - bx[1]), text, font=font, fill=(*_rgb(color), int(255 * a)))
             y -= int(18 * u)
     return Image.alpha_composite(img.convert("RGBA"), layer).convert("RGB")
+
+
+# ------------------------------------------------------------------ color grade (post, engine independent)
+def grade(img, name="neutral", vignette=0.0):
+    import numpy as np
+    if name == "neutral" and not vignette:
+        return img
+    a = np.asarray(img.convert("RGB"), dtype=np.float32) / 255.0
+    luma = (a * [0.2126, 0.7152, 0.0722]).sum(-1, keepdims=True)
+
+    def sat(x, k):
+        l = (x * [0.2126, 0.7152, 0.0722]).sum(-1, keepdims=True)
+        return l + (x - l) * k
+
+    def scurve(x, k):
+        return np.clip(0.5 + (x - 0.5) * k - (k - 1) * (x - 0.5) ** 3 * 2, 0, 1)
+
+    if name == "contrast":
+        a = sat(scurve(a, 1.25), 1.12)
+    elif name == "cool":
+        shadows = (1 - luma) ** 2
+        a = a + shadows * np.array([-0.035, 0.04, 0.085]) + luma ** 2 * np.array([-0.035, 0.01, 0.06])
+        a = sat(scurve(a, 1.1), 0.92)
+    elif name == "warm":
+        a = a * 0.94 + 0.035                      # lifted blacks, film fade
+        a = a + luma ** 1.5 * np.array([0.05, 0.02, -0.04])
+        a = sat(a, 0.9)
+        rng = np.random.default_rng(int(a.sum() * 1000) % 2**32)
+        a = a + rng.normal(0, 0.012, a.shape[:2])[..., None]  # light grain
+    if vignette:
+        h, w = a.shape[:2]
+        yy, xx = np.mgrid[0:h, 0:w]
+        r = np.sqrt(((xx - w / 2) / (w / 2)) ** 2 + ((yy - h / 2) / (h / 2)) ** 2) / np.sqrt(2)
+        a = a * (1 - vignette * r[..., None] ** 2)
+    return Image.fromarray((np.clip(a, 0, 1) * 255).astype("uint8"))

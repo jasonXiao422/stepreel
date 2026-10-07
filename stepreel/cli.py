@@ -72,13 +72,14 @@ def _progress_render(bpy, sc, frames_dir):
 
 def _compose(cfg, frames_dir, out_dir, step=1):
     from PIL import Image
-    from .overlay import draw_titles
+    from .overlay import draw_titles, grade
     os.makedirs(out_dir, exist_ok=True)
+    vig = 0.25 if cfg["style"] != "clean-white" else 0.0
     fps = cfg["output"]["fps"]
     files = sorted(glob.glob(os.path.join(frames_dir, "f_*.png")))
     for i, f in enumerate(files):
         t = i * step / fps
-        img = Image.open(f).convert("RGB")
+        img = grade(Image.open(f).convert("RGB"), cfg["grade"], vig)
         img = draw_titles(img, t, cfg["titles"], cfg["style"], cfg.get("font"), cfg["_accent"])
         img.save(os.path.join(out_dir, f"c_{i + 1:04d}.png"), compress_level=1)
     return files
@@ -185,7 +186,7 @@ def cmd_still(args):
     import bpy
     from PIL import Image
     from .build import build
-    from .overlay import draw_titles
+    from .overlay import draw_titles, grade
     wd = _workdir("still", cfg, os.path.basename(glb))
     build(cfg, glb, "render", os.path.join(wd, "frames"))
     sc = bpy.context.scene
@@ -195,7 +196,8 @@ def cmd_still(args):
         out = f"still_{t:.1f}s.png"
         sc.render.filepath = os.path.abspath(out)
         bpy.ops.render.render(write_still=True)
-        img = draw_titles(Image.open(out).convert("RGB"), t, cfg["titles"], cfg["style"], cfg.get("font"), cfg["_accent"])
+        img = grade(Image.open(out).convert("RGB"), cfg["grade"], 0.25 if cfg["style"] != "clean-white" else 0.0)
+        img = draw_titles(img, t, cfg["titles"], cfg["style"], cfg.get("font"), cfg["_accent"])
         img.save(out)
         print(f"[stepreel] 静帧 {out}")
 

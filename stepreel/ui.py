@@ -17,6 +17,9 @@ from urllib.parse import parse_qs, unquote, urlparse
 
 import yaml
 
+mimetypes.add_type("image/webp", ".webp")
+mimetypes.add_type("video/mp4", ".mp4")
+
 ROOT = Path(os.environ.get("STEPREEL_HOME", Path.home() / "stepreel-projects"))
 WEB = Path(__file__).parent / "web"
 JOBS = {}
@@ -56,7 +59,9 @@ def build_config(form):
         "style": form.get("style", "dark-studio"),
         "speed": float(form.get("speed", 1.0)),
         "explode": {"spread": float(form.get("spread", 1.0)), "mode": form.get("mode", "layers")},
-        "camera": {"zoom": float(form.get("zoom", 1.0)), "elevation": float(form.get("elevation", 28))},
+        "camera": {"zoom": float(form.get("zoom", 1.0)), "preset": form.get("camera", "orbit")},
+        "lighting": form.get("lighting", "auto"),
+        "grade": form.get("grade", "neutral"),
         "output": {"resolution": [1920, 1080]},
         "titles": [],
     }
@@ -213,6 +218,8 @@ class Handler(BaseHTTPRequestHandler):
             if m := re.fullmatch(r"/api/project/(\w+)", u.path):
                 pdir = project_dir(m.group(1))
                 return self._json(json.loads((pdir / "project.json").read_text(encoding="utf-8")))
+            if m := re.fullmatch(r"/thumbs/([\w.\-]+)", u.path):
+                return self._file(WEB / "thumbs" / m.group(1))
             if m := re.fullmatch(r"/files/(\w+)/([\w.\-]+)", u.path):
                 return self._file(project_dir(m.group(1)) / m.group(2))
         except (ValueError, FileNotFoundError) as e:

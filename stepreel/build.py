@@ -6,7 +6,7 @@ import bpy
 import numpy as np
 from mathutils import Euler, Matrix, Vector
 
-from .config import STYLES
+from .config import LIGHTS, STYLES
 
 
 # ---------------------------------------------------------------- import
@@ -27,6 +27,7 @@ class _quiet:
 
 
 def load_parts(glb, rotate_deg=(0, 0, 0)):
+    _MAT_CACHE.clear()
     with _quiet():
         bpy.ops.wm.read_factory_settings(use_empty=True)
         bpy.ops.import_scene.gltf(filepath=glb)
@@ -100,7 +101,10 @@ LIB = {
 }
 
 
-def make_material(spec, cache={}):
+_MAT_CACHE = {}
+
+
+def make_material(spec, cache=_MAT_CACHE):
     if isinstance(spec, str):
         if spec not in LIB:
             raise SystemExit(f"未知材质 {spec}，可选: {', '.join(LIB)}，或写 {{type: plastic, color: '#RRGGBB'}}")
@@ -114,7 +118,7 @@ def make_material(spec, cache={}):
             base.update(metal=0.0, rough=spec.get("roughness", 0.5))
         base["color"] = _hex(spec["color"]) if "color" in spec else base.get("color", (0.5, 0.5, 0.5))
         key, p = repr(sorted(spec.items())), base
-    if key in cache and cache[key].name in bpy.data.materials:
+    if key in cache:
         return cache[key]
     m = bpy.data.materials.new(str(spec)[:40])
     m.use_nodes = True
@@ -198,6 +202,19 @@ def plan_explode(parts, ex, timeline):
                     d = d / (np.linalg.norm(d) + 1e-9) * ov["distance"] * spread
                 delay = ov.get("delay", delay)
         plan.append((o, Vector(d), delay))
+    if ex["mode"] == "sequential":
+        # one part type at a time: fasteners first, then outer layers inward
+        fast = re.compile(ex["groups"][0]["match"], re.I) if ex["groups"] else None
+        score = {}
+        for (o, d, delay), ctr in zip(plan, centers):
+            n = part_name(o)
+            k = (0 if fast and fast.search(n) else 1, -abs((ctr[axis] - C[axis]) / half))
+            score[n] = min(score.get(n, k), k)
+        order = {n: i for i, n in enumerate(sorted(score, key=score.get))}
+        span = timeline["explode"] * 0.75
+        last = {n for ov in ex.get("overrides", []) for n in order if re.search(ov["match"], n, re.I)}
+        plan = [(o, d, span * order[part_name(o)] / max(1, len(order) - 1) if part_name(o) not in last else delay)
+                for o, d, delay in plan]
     return plan, "xyz"[axis]
 
 
@@ -231,7 +248,22 @@ def fit_distance(lo, hi, lens, aspect):
     return r / math.sin(min(hfov, vfov) / 2) * 0.72
 
 
-def setup_camera(cam_cfg, timeline, lo_a, hi_a, lo_e, hi_e, aspect, fps):
+CAMERA_PRESETS = {
+    # elevation (deg), and keyframes: (phase time 0..1 within the clip, angle deg, elevation offset, framing, distance mult)
+    # framing: "a" = fit assembled model, "e" = fit exploded model, "d" = close on detail point
+    "orbit": None,  # built from start/end angle below
+    "hero": (8, [(0.0, -38, 0, "a", 0.78), ("intro", -30, 3, "a", 0.92), ("ex", -24, 8, "e", 1.0),
+                 ("hold", -18, 8, "e", 1.0), ("asm", -12, 2, "a", 0.9), (1.0, -8, 0, "a", 0.82)]),
+    "topdown": (78, [(0.0, -95, 0, "a", 1.0), ("intro", -88, 0, "a", 0.95), ("ex", -80, -6, "e", 1.0),
+                     ("hold", -72, -6, "e", 1.02), ("asm", -66, 0, "a", 1.0), (1.0, -62, 0, "a", 0.96)]),
+    "turntable": (24, [(0.0, -50, 0, "a", 1.0), ("intro", -50, 0, "a", 0.97), ("ex", -50, 2, "e", 1.0),
+                       ("hold", -50, 2, "e", 1.0), ("asm", -50, 0, "a", 1.0), (1.0, -50, 0, "a", 0.97)]),
+    "reveal": (18, [(0.0, -25, -4, "d", 0.3), ("intro", -15, 4, "a", 1.0), ("ex", -5, 8, "e", 1.0),
+                    ("hold", 5, 8, "e", 1.0), ("asm", 12, 4, "a", 1.0), (1.0, 18, 2, "a", 0.95)]),
+}
+
+
+def setup_camera(cam_cfg, timeline, lo_a, hi_a, lo_e, hi_e, aspect, fps, detail=None):
     sc = bpy.context.scene
     F = lambda s: int(round(s * fps)) + 1
     target = bpy.data.objects.new("target", None); sc.collection.objects.link(target)
@@ -245,29 +277,68 @@ def setup_camera(cam_cfg, timeline, lo_a, hi_a, lo_e, hi_e, aspect, fps):
     da = fit_distance(lo_a, hi_a, cam_cfg["lens"], aspect) * cam_cfg["zoom"]
     de = fit_distance(lo_e, hi_e, cam_cfg["lens"], aspect) * cam_cfg["zoom"] * 1.08
     ca, ce = Vector((lo_a + hi_a) / 2), Vector((lo_e + hi_e) / 2)
+    cdet = Vector(detail) if detail is not None else ca
     t = timeline
     T = sum(t[k] for k in ("intro", "explode", "hold", "assemble", "outro"))
-    a0, a1, el = cam_cfg["start_angle"], cam_cfg["end_angle"], math.radians(cam_cfg["elevation"])
-    keys = [(0, da, ca), (t["intro"], da * 0.96, ca),
-            (t["intro"] + t["explode"] * 0.85, de, ce), (t["intro"] + t["explode"] + t["hold"], de * 1.02, ce),
-            (T - t["outro"], da, ca), (T, da * 0.97, ca)]
-    for s, dist, ctr in keys:
-        ang = math.radians(a0 + (a1 - a0) * s / T)
-        cam.location = ctr + Vector((math.cos(ang) * math.cos(el), math.sin(ang) * math.cos(el), math.sin(el))) * dist
+    phase = {"intro": t["intro"], "ex": t["intro"] + t["explode"] * 0.85,
+             "hold": t["intro"] + t["explode"] + t["hold"], "asm": T - t["outro"]}
+    preset = cam_cfg.get("preset", "orbit")
+    if preset == "orbit" or preset not in CAMERA_PRESETS:
+        a0, a1 = cam_cfg["start_angle"], cam_cfg["end_angle"]
+        base_el = 28
+        lerp = lambda s: a0 + (a1 - a0) * s / T
+        keys = [(0, lerp(0), 0, "a", 1.0), (phase["intro"], lerp(phase["intro"]), 0, "a", 0.96),
+                (phase["ex"], lerp(phase["ex"]), 0, "e", 1.0), (phase["hold"], lerp(phase["hold"]), 0, "e", 1.02),
+                (phase["asm"], lerp(phase["asm"]), 0, "a", 1.0), (T, a1, 0, "a", 0.97)]
+    else:
+        base_el, raw = CAMERA_PRESETS[preset]
+        keys = [((phase[k] if isinstance(k, str) else k * T), ang, de_, fr, m) for k, ang, de_, fr, m in raw]
+    if cam_cfg.get("elevation") is not None:
+        base_el = cam_cfg["elevation"]
+    for s, ang, del_, framing, mult in keys:
+        dist, ctr = {"a": (da, ca), "e": (de, ce), "d": (da, cdet)}[framing]
+        el = math.radians(min(85, max(-10, base_el + del_)))
+        a = math.radians(ang)
+        cam.location = ctr + Vector((math.cos(a) * math.cos(el), math.sin(a) * math.cos(el), math.sin(el))) * dist * mult
         cam.keyframe_insert("location", frame=F(s))
         target.location = ctr; target.keyframe_insert("location", frame=F(s))
+    if preset == "reveal" and cam_cfg.get("dof", True):
+        cd.dof.aperture_fstop = 2.8
+        cd.keyframe_insert("dof.aperture_fstop", frame=1)
+        cd.dof.aperture_fstop = 5.6
+        cd.keyframe_insert("dof.aperture_fstop", frame=F(phase["intro"]))
     return da, de
 
 
-def setup_studio(style, lo_e, hi_e, dist):
+def add_turntable(parts, duration, fps):
+    sc = bpy.context.scene
+    pivot = bpy.data.objects.new("turntable", None); sc.collection.objects.link(pivot)
+    for o in parts:
+        o.parent = pivot
+    pivot.rotation_euler.z = 0; pivot.keyframe_insert("rotation_euler", index=2, frame=1)
+    pivot.rotation_euler.z = 2 * math.pi
+    pivot.keyframe_insert("rotation_euler", index=2, frame=int(round(duration * fps)) + 1)
+    ad = pivot.animation_data
+    try:
+        from bpy_extras import anim_utils
+        fcs = anim_utils.action_get_channelbag_for_slot(ad.action, ad.action_slot).fcurves
+    except Exception:
+        fcs = ad.action.fcurves
+    for fc in fcs:
+        for kp in fc.keyframe_points:
+            kp.interpolation = "LINEAR"
+
+
+def setup_studio(style, lo_e, hi_e, dist, lighting=None):
     sc = bpy.context.scene
     st = STYLES[style]
+    rig = LIGHTS[lighting or st["lighting"]]
     bpy.ops.mesh.primitive_plane_add(size=50, location=(0, 0, float(lo_e[2]) - 0.04))
     floor = bpy.context.object; floor.name = "floor"
     fm = make_material({"type": "plastic", "color": st["floor"]["color"], "roughness": st["floor"]["rough"]})
     floor.data.materials.append(fm)
     L = dist * 0.9
-    for name, direc, rel, ppd, size, color in st["lights"]:
+    for name, direc, rel, ppd, size, color in rig:
         l = bpy.data.lights.new(name, "AREA")
         d = L * rel
         l.energy = ppd * d * d; l.size = size * L * 0.6; l.color = color
@@ -313,6 +384,7 @@ def setup_render(cfg, mode, frames_dir):
     r.image_settings.file_format = "PNG"
     r.filepath = frames_dir.rstrip("/\\") + "/f_####"
     r.use_overwrite = False; r.use_placeholder = True  # resume interrupted renders
+    r.use_persistent_data = True  # keep geometry in memory between frames
     if mode == "preview":
         # low-res, low-sample Cycles: fast on any machine and shows the real look
         r.engine = "CYCLES"
@@ -345,8 +417,11 @@ def build(cfg, glb, mode, frames_dir):
         lo, hi = obj_bbox(o); ex_pts += [lo + np.array(d), hi + np.array(d)]
     lo_e, hi_e = np.min(ex_pts, 0), np.max(ex_pts, 0)
     events = animate_explode(plan, cfg["timeline"], fps)
-    da, de = setup_camera(cfg["camera"], cfg["timeline"], lo_a, hi_a, lo_e, hi_e, W / H, fps)
-    setup_studio(cfg["style"], lo_e, hi_e, max(da, de))
+    detail = np.median(np.array([(lambda b: (b[0] + b[1]) / 2)(obj_bbox(o)) for o in parts]), 0)
+    if cfg["camera"].get("preset") == "turntable":
+        add_turntable(parts, cfg["duration"], fps)
+    da, de = setup_camera(cfg["camera"], cfg["timeline"], lo_a, hi_a, lo_e, hi_e, W / H, fps, detail)
+    setup_studio(cfg["style"], lo_e, hi_e, max(da, de), cfg.get("lighting"))
     sc = bpy.context.scene
     sc.frame_start, sc.frame_end = 1, int(round(cfg["duration"] * fps))
     device = setup_render(cfg, mode, frames_dir)

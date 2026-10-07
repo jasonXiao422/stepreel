@@ -1,7 +1,7 @@
 @echo off
 chcp 65001 >nul
 title stepreel
-set "VER=0.2.0"
+set "VER=0.3.0"
 set "MARK=%USERPROFILE%\.stepreel-%VER%"
 set "PATH=%USERPROFILE%\.local\bin;%PATH%"
 

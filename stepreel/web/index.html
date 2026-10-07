@@ -57,6 +57,15 @@ input[type=range]{width:100%;accent-color:var(--ink)}
 .sw i::after{content:"";position:absolute;right:8px;bottom:8px;width:10px;height:10px;border-radius:50%;background:var(--dot)}
 .sw span{display:block;padding:5px 7px;font-size:12px}
 .sw[aria-pressed=true]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.picker{margin-top:14px}
+.picker>span{display:block;font-size:12px;color:var(--graphite);margin-bottom:5px}
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.card{border:1px solid var(--rule);background:#fff;padding:0;cursor:pointer;text-align:left;border-radius:2px;overflow:hidden}
+.card img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:#14171d}
+.card b{display:block;padding:5px 7px 0;font-size:13px;font-weight:600}
+.card small{display:block;padding:0 7px 6px;font-size:11px;color:var(--graphite);line-height:1.35}
+.card[aria-pressed=true]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.card[aria-pressed=true] b::before{content:"";display:inline-block;width:7px;height:7px;background:var(--signal);margin-right:6px;vertical-align:1px}
 .accent{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:13px;color:var(--graphite)}
 .accent input{width:34px;height:24px;border:1px solid var(--rule);padding:0;background:none}
 
@@ -135,14 +144,18 @@ td.c{text-align:center;width:72px}
     </section>
 
     <section class="sec">
-      <h2><b>2</b>风格</h2>
+      <h2><b>2</b>画面</h2>
       <div class="body">
+        <div class="picker" style="margin-top:0"><span>背景</span></div>
         <div class="styles" id="styles">
           <button class="sw" data-style="dark-studio" aria-pressed="true" style="--dot:#F25213"><i style="background:radial-gradient(circle at 40% 70%,#3b4656,#07080b 70%)"></i><span>暗场影棚</span></button>
           <button class="sw" data-style="clean-white" aria-pressed="false" style="--dot:#2F6BFF"><i style="background:radial-gradient(circle at 40% 70%,#ffffff,#d4d7dc 75%)"></i><span>白色影棚</span></button>
           <button class="sw" data-style="tech-blue" aria-pressed="false" style="--dot:#00C2FF"><i style="background:radial-gradient(circle at 40% 70%,#123056,#01050d 70%)"></i><span>科技蓝</span></button>
         </div>
         <label class="accent">主色 <input type="color" id="accent" value="#F25213"> <span id="accentHex">#F25213</span>，用于塑料件和副标题</label>
+        <div class="picker"><span>运镜</span><div class="cards" id="camera"></div></div>
+        <div class="picker"><span>打光</span><div class="cards" id="lighting"></div></div>
+        <div class="picker"><span>调色</span><div class="cards" id="grade"></div></div>
       </div>
     </section>
 
@@ -152,9 +165,8 @@ td.c{text-align:center;width:72px}
         <div class="row"><label for="spread">炸开程度</label><input type="range" id="spread" min="0.5" max="2" step="0.1" value="1"><output data-for="spread"></output></div>
         <div class="row"><label for="speed">节奏</label><input type="range" id="speed" min="0.6" max="1.6" step="0.1" value="1"><output data-for="speed"></output></div>
         <div class="row"><label for="zoom">镜头距离</label><input type="range" id="zoom" min="0.7" max="1.5" step="0.05" value="1"><output data-for="zoom"></output></div>
-        <div class="row"><label for="elevation">俯视角</label><input type="range" id="elevation" min="5" max="70" step="1" value="28"><output data-for="elevation"></output></div>
         <div class="row" style="grid-template-columns:72px 1fr"><label>拆解方式</label>
-          <div class="seg" id="mode"><button data-v="layers" aria-pressed="true">分层拆开</button><button data-v="radial" aria-pressed="false">向四周散开</button></div></div>
+          <div class="seg" id="mode"><button data-v="layers" aria-pressed="true">分层拆开</button><button data-v="radial" aria-pressed="false">向四周散开</button><button data-v="sequential" aria-pressed="false">逐个拆解</button></div></div>
       </div>
     </section>
 
@@ -223,6 +235,27 @@ const MATS = [["auto","自动"],["carbon","碳纤维"],["steel","钢"],["aluminu
 const CHIP = {carbon:"#202226",steel:"#B9BCC2",aluminum:"#D4D7DC",brass:"#C9963F",nylon:"#E3DFD3",rubber:"#111",pcb:"#1E5B36",black:"#151517",white:"#E8E6E1",anodized:"#2B2D31"};
 const STYLE_ACCENT = {"dark-studio":"#F25213","clean-white":"#2F6BFF","tech-blue":"#00C2FF"};
 let project = null, current = null, poll = null, view = "video", accentTouched = false;
+let lightTouched = false;
+const PICKS = {
+  camera: [["orbit","环绕","绕着产品转大半圈"],["hero","英雄仰拍","低角度推近，显得有分量"],["topdown","俯视","像看图纸，适合平面机构"],
+           ["turntable","转台","镜头不动，产品自转一圈"],["reveal","细节揭幕","从局部特写拉到全景"]],
+  lighting: [["rim","轮廓光","冷暖边光勾出轮廓"],["softbox","柔光棚","均匀明亮，像官网产品图"],["dramatic","单灯戏剧","一盏顶光，明暗强烈"],["neon","霓虹","青色和品红边光"]],
+  grade: [["neutral","原色","不做额外调色"],["contrast","高对比","更硬朗、更饱和"],["cool","冷调科技","暗部偏青，干净利落"],["warm","暖调胶片","柔和、有颗粒感"]],
+};
+const THUMB = {camera:"webp", lighting:"jpg", grade:"jpg"};
+const STYLE_LIGHT = {"dark-studio":"rim","clean-white":"softbox","tech-blue":"neon"};
+for (const [key, list] of Object.entries(PICKS)) {
+  const box = document.getElementById(key);
+  list.forEach(([v,name,desc],i)=>{
+    const b = document.createElement("button"); b.className="card"; b.dataset.v=v; b.setAttribute("aria-pressed", i===0);
+    b.innerHTML = `<img alt="" loading="lazy" src="/thumbs/${key}-${v}.${THUMB[key]}"><b>${name}</b><small>${desc}</small>`;
+    box.append(b);
+  });
+  box.addEventListener("click", e => { const b=e.target.closest(".card"); if(!b) return;
+    box.querySelectorAll(".card").forEach(x=>x.setAttribute("aria-pressed", x===b)); if(key==="lighting") lightTouched=true; });
+}
+const pickVal = id => document.querySelector(id+' .card[aria-pressed="true"]').dataset.v;
+function setPick(id, v){ document.querySelectorAll(id+" .card").forEach(x=>x.setAttribute("aria-pressed", x.dataset.v===v)); }
 const versions = [];
 
 function seg(id){ const el=$(id); el.addEventListener("click",e=>{const b=e.target.closest("button"); if(!b) return;
@@ -233,12 +266,13 @@ function setAspect(){ $("#stage").classList.toggle("vertical", segVal("#aspect")
 
 document.querySelectorAll('input[type=range]').forEach(r=>{
   const o=document.querySelector(`output[data-for="${r.id}"]`);
-  const fmt=()=>o.textContent = r.id==="elevation" ? r.value+"°" : "×"+Number(r.value).toFixed(r.step<0.1?2:1);
+  const fmt=()=>o.textContent = "×"+Number(r.value).toFixed(r.step<0.1?2:1);
   r.addEventListener("input",fmt); fmt();
 });
 $("#styles").addEventListener("click",e=>{const b=e.target.closest(".sw"); if(!b) return;
   document.querySelectorAll(".sw").forEach(x=>x.setAttribute("aria-pressed",x===b));
-  if(!accentTouched){ $("#accent").value=STYLE_ACCENT[b.dataset.style]; $("#accentHex").textContent=$("#accent").value; }});
+  if(!accentTouched){ $("#accent").value=STYLE_ACCENT[b.dataset.style]; $("#accentHex").textContent=$("#accent").value; }
+  if(!lightTouched) setPick("#lighting", STYLE_LIGHT[b.dataset.style]); });
 $("#accent").addEventListener("input",e=>{accentTouched=true; $("#accentHex").textContent=e.target.value.toUpperCase();});
 
 // ---------- upload
@@ -295,7 +329,7 @@ function form(){
   document.querySelectorAll("#bom input[type=checkbox]").forEach(c=>{ if(c.checked) last[c.dataset.name]=true; });
   return { style: document.querySelector('.sw[aria-pressed="true"]').dataset.style,
     accent: $("#accent").value, spread:+$("#spread").value, speed:+$("#speed").value, zoom:+$("#zoom").value,
-    elevation:+$("#elevation").value, mode:segVal("#mode"), aspect:segVal("#aspect"), quality:segVal("#quality"),
+    camera:pickVal("#camera"), lighting:pickVal("#lighting"), grade:pickVal("#grade"), mode:segVal("#mode"), aspect:segVal("#aspect"), quality:segVal("#quality"),
     audio: segVal("#audio")==="on", materials, last,
     titles:{name:$("#tName").value.trim(), sub:$("#tSub").value.trim(), stat:$("#tStat").value.trim(),
             statcap:$("#tStatCap").value.trim(), end:$("#tEnd").value.trim()} };

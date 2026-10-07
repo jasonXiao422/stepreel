@@ -43,8 +43,15 @@ Then edit `stepreel.yaml`. Keep edits minimal; untouched keys use defaults. Map 
 | "X 最后飞出 / 往侧面抽出" | `explode.overrides` with `match`, `direction`, `distance`, `delay` |
 | "这个零件是铝的 / 换品牌色" | add a rule at the top of `materials` (first match wins) |
 | "白色背景 / 苹果风" | `style: clean-white` |
+| "转一圈 / 电商展示" | `camera.preset: turntable` |
+| "大气一点 / 仰拍" | `camera.preset: hero` |
+| "从上往下看 / 像图纸" | `camera.preset: topdown` |
+| "先特写再拉远" | `camera.preset: reveal` |
+| "一个一个拆 / 像装配说明书" | `explode.mode: sequential` |
+| "柔和明亮 / 戏剧化 / 赛博" | `lighting: softbox / dramatic / neon` |
+| "高级感 / 冷色调 / 胶片感" | `grade: contrast / cool / warm` |
 | "竖屏 / 抖音" | `output.resolution: [1080, 1920]` |
-| "镜头近一点 / 从上面看" | `camera.zoom`, `camera.elevation` |
+| "镜头近一点 / 角度高一点" | `camera.zoom`, `camera.elevation` |
 | "加标题 / 卖点" | `titles` (styles: title, subtitle, stat, caption) |
 | "用我的音乐" | `audio.music: path` |
 | "模型躺倒了 / 朝向不对" | `model.rotate: [90, 0, 0]` etc. |
