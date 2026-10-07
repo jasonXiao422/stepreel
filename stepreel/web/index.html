@@ -76,6 +76,10 @@ input[type=range]{width:100%;accent-color:var(--ink)}
 .choice .v{display:block;font-weight:600;font-size:14px}
 .choice .d{display:block;font-size:11.5px;color:var(--graphite);line-height:1.35}
 .choice .go{font-size:12px;color:var(--trace);padding-right:4px;white-space:nowrap}
+.samples{display:grid;grid-template-columns:84px 1fr;gap:10px;align-items:start;margin:0 0 6px}
+#tSamples{display:flex;flex-wrap:wrap;gap:6px}
+#tSamples button{border:1px solid var(--rule);background:#fff;border-radius:12px;padding:3px 10px;font-size:12.5px;cursor:pointer}
+#tSamples button:hover{border-color:var(--ink)}
 .sel{width:100%;border:1px solid var(--ink);border-radius:2px;background:#fff;padding:6px 8px;font-size:13px}
 .tprev{position:relative;margin:12px 0 8px;border:1px solid var(--ink);background:#14171d;aspect-ratio:16/9}
 .tprev img{display:block;width:100%;height:100%;object-fit:cover}
@@ -234,6 +238,7 @@ td.c{text-align:center;width:72px}
         <div class="seg" id="textOn" style="margin-bottom:10px"><button data-v="on" aria-pressed="true">加文字</button><button data-v="off" aria-pressed="false">不加文字</button></div>
         <p class="hint" id="textOffHint" hidden>视频里不会出现任何文字，适合自己在剪映、PR、达芬奇里加字幕。</p>
         <div id="textOpts">
+          <div class="samples"><span class="lab">示例文字 <i class="tip" tabindex="0" data-tip="点一下就把下面几格填好，方便先看效果，之后改成你自己的内容。">?</i></span><div id="tSamples"></div></div>
           <label class="field"><span>产品名（开场大标题）</span><input type="text" id="tName" placeholder="例：壁面起降臂 V2"></label>
           <label class="field"><span>副标题</span><input type="text" id="tSub" placeholder="例：WALL-MOUNTED LIFT ARM"></label>
           <div class="pair">
@@ -348,6 +353,11 @@ fetch("/api/library").then(r=>r.json()).then(lib=>{
     b.innerHTML = `<img alt="" loading="lazy" src="${p.thumb}" onerror="this.className='nothumb'"><b>${esc(p.name)}</b><small>${esc(p.desc)}</small>`;
     b.onclick = () => applyLook(p.id); box.append(b);
   });
+  lib.text_samples.forEach(sm=>{ const b=document.createElement("button"); b.textContent=sm.label;
+    b.title = [sm.name, sm.sub, sm.stat && (sm.stat+" "+sm.statcap), sm.end].filter(Boolean).join(" / ");
+    b.onclick = () => { $("#tName").value=sm.name; $("#tSub").value=sm.sub; $("#tStat").value=sm.stat;
+      $("#tStatCap").value=sm.statcap; $("#tEnd").value=sm.end; updateTextPreview(); };
+    $("#tSamples").append(b); });
   for(const [id, opts] of [["#tPos", lib.text_positions], ["#tAnim", lib.text_anims]])
     for(const [v,t] of Object.entries(opts)){ const o=document.createElement("option"); o.value=v; o.textContent=t; $(id).append(o); }
   renderChoices(); maybeStartTour(); updateTextPreview();

@@ -111,13 +111,15 @@ if "preset" in kinds:
             print("preset", name, flush=True)
 
 if "text" in kinds:
-    from stepreel.overlay import TEXT_STYLES, draw_titles
-    sample = [{"text": "产品名称", "style": "title", "start": 0, "end": 99},
-              {"text": "PRODUCT NAME", "style": "subtitle", "start": 0, "end": 99},
-              {"text": "165", "style": "stat", "caption": "个零件", "start": 0, "end": 99}]
+    from stepreel.overlay import STYLE_SAMPLE, TEXT_SAMPLES, TEXT_STYLES, draw_titles
     bg = Image.open(os.path.join(out, "scene-dark-studio.jpg")).convert("RGB").resize((800, 450))
     for name in TEXT_STYLES:
         if want(name):
-            im = draw_titles(bg, 5.0, sample, "dark-studio", None, "#F25213", {"style": name, "size": 1.7})
+            smp = TEXT_SAMPLES[STYLE_SAMPLE[name]]
+            sample = [{"text": smp["name"], "style": "title", "start": 0, "end": 99},
+                      {"text": smp["sub"], "style": "subtitle", "start": 0, "end": 99}]
+            if smp["stat"]:
+                sample.append({"text": smp["stat"], "style": "stat", "caption": smp["statcap"], "start": 0, "end": 99})
+            im = draw_titles(bg, 5.0, sample, "dark-studio", None, "#F25213", {"style": name, "size": 1.5})
             im.resize((400, 225), Image.LANCZOS).save(os.path.join(out, f"text-{name}.jpg"), quality=88)
             print("text", name, flush=True)

@@ -66,6 +66,7 @@ def library():
             "mode": [{"id": k, "name": v[0], "desc": v[1]} for k, v in C.EXPLODE_INFO.items()],
             "text": [{"id": k, "name": v["name"], "desc": v["desc"], "thumb": f"/thumbs/text-{k}.jpg"}
                      for k, v in O.TEXT_STYLES.items()],
+            "text_samples": [{"id": k, **v} for k, v in O.TEXT_SAMPLES.items()],
             "text_positions": O.TEXT_POSITIONS, "text_anims": O.TEXT_ANIMS, "text_backdrops": O.TEXT_BACKDROPS}
 
 

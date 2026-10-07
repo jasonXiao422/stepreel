@@ -125,6 +125,23 @@ TEXT_STYLES = {
         "cap": ("regular", 28, 0.24), "end": ("regular", 30, 0.28),
     },
 }
+# Ready-made copy for the example lift arm. Facts only (part count, gear ratio, materials), no invented specs.
+TEXT_SAMPLES = {
+    "launch_cn": {"label": "中文发布", "name": "壁面起降臂 V2", "sub": "碳纤维连杆 · 一级齿轮减速",
+                  "stat": "165", "statcap": "个零件", "end": "SolidWorks 建模 · 代码渲染"},
+    "launch_en": {"label": "English", "name": "Lift Arm V2", "sub": "Carbon Fiber Linkage System",
+                  "stat": "165", "statcap": "Parts in one assembly", "end": "Designed in SolidWorks"},
+    "spec_cn": {"label": "参数介绍", "name": "一级减速机械臂", "sub": "总线舵机驱动 · 自润滑轴套",
+                "stat": "12:72", "statcap": "齿轮减速比", "end": "38 种零件 · 3D 打印 + 碳纤维"},
+    "spec_en": {"label": "Specs", "name": "ARM-02", "sub": "Gear-reduced lift mechanism",
+                "stat": "1:6", "statcap": "Reduction ratio", "end": "Carbon fiber · Nylon · Steel"},
+    "minimal": {"label": "极简", "name": "起降臂", "sub": "LIFT ARM",
+                "stat": "", "statcap": "", "end": "2026"},
+    "teaser": {"label": "预告片", "name": "Coming Soon", "sub": "A new way to lift",
+               "stat": "", "statcap": "", "end": "Stay tuned"},
+}
+STYLE_SAMPLE = {"classic": "launch_cn", "minimal": "minimal", "impact": "spec_cn",
+                "tech": "spec_en", "editorial": "launch_en", "cinema": "teaser"}
 TEXT_POSITIONS = {"auto": "跟随样式", "bottom-left": "左下", "bottom": "底部居中", "center": "正中", "top-left": "左上"}
 TEXT_ANIMS = {"auto": "跟随样式", "fade": "淡入", "rise": "上滑", "type": "打字机", "expand": "展开"}
 TEXT_COLORS = {"auto": "自动", "white": "白色", "black": "黑色", "accent": "主色"}
@@ -218,7 +235,8 @@ def letterbox_height(text_cfg, H, t):
     st = TEXT_STYLES.get((text_cfg or {}).get("style", "classic"), {})
     if not (text_cfg or {}).get("enabled", True) or not st.get("letterbox"):
         return 0
-    return int(H * st["letterbox"] * _ease(t / 0.8))
+    frac = st["letterbox"] * max(1.0, float((text_cfg or {}).get("size", 1.0) or 1.0))
+    return int(H * frac * _ease(t / 0.8))
 
 
 def draw_titles(img, t, titles, style, font_cfg=None, accent=None, text_cfg=None):
@@ -291,7 +309,7 @@ def draw_titles(img, t, titles, style, font_cfg=None, accent=None, text_cfg=None
         widths = [ln.width() for _, ln in rows]
         maxw = max(widths)
         if ts.get("in_bars") and bars and pos != "center":
-            full = int(H * ts["letterbox"])
+            full = int(H * ts["letterbox"] * max(1.0, mult))
             y = (full - total) // 2 if pos.startswith("top") else H - full + (full - total) // 2
         elif pos.startswith("top"):
             y = top_m
