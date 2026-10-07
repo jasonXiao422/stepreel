@@ -1,6 +1,6 @@
 [project]
 name = "stepreel"
-version = "0.5.1"
+version = "0.5.2"
 description = "Turn a CAD assembly (STEP) into a studio-quality exploded-view video with one command."
 readme = "README.md"
 license = { text = "GPL-3.0-or-later" }

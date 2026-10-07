@@ -2,7 +2,7 @@
 chcp 65001 >nul
 setlocal
 title stepreel
-set "VER=0.5.1"
+set "VER=0.5.2"
 set "HERE=%~dp0"
 set "UV=%HERE%bin\uv.exe"
 set "MARK=%USERPROFILE%\.stepreel-%VER%"
