@@ -1,0 +1,9 @@
+.venv/
+.stepreel/
+__pycache__/
+*.mp4
+*.png
+*.blend
+*.blend1
+parts.json
+!examples/**/*.png

@@ -1,0 +1,17 @@
+# 示例：壁面起降臂 V2（165 个零件，SolidWorks 2025 导出的 STEP）
+# 只写和默认不同的部分，其余用默认值。
+
+style: dark-studio
+
+explode:
+  overrides:
+    - match: "舵机ST"          # 舵机最后单独向外抽出
+      direction: [1, 0, 0]
+      distance: 0.25
+      delay: 0.9
+
+titles:
+  - {text: "壁面起降臂 V2", style: title, start: 0.3, end: 2.2, position: bottom-left}
+  - {text: "WALL-MOUNTED LIFT ARM", style: subtitle, start: 0.5, end: 2.2, position: bottom-left}
+  - {text: "165", style: stat, caption: "个零件  ·  12:72 一级减速  ·  碳纤维连杆", start: 3.4, end: 5.9, position: top-left}
+  - {text: "SolidWorks 建模  ·  代码渲染", style: caption, start: 7.0, end: 8.2, position: bottom}
