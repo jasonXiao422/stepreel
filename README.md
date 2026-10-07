@@ -111,6 +111,8 @@ STEP ──cascadio──▶ 网格(GLB) ──Blender(bpy)──▶ 材质/爆�
                                                                   ──ffmpeg──▶ MP4
 ```
 
-## License
+## 协议 License
 
-MIT. 生成的视频归你所有。
+GPL-3.0-or-later。可以自由使用、修改、再分发和出售，再分发时须附带源码并保持同一协议。
+本项目依赖 Blender（GPL）等开源组件，第三方组件清单见 `NOTICE.txt`。
+用本工具生成的视频归使用者所有，可商用。

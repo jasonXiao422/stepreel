@@ -1,0 +1,30 @@
+﻿stepreel
+Copyright (C) 2026 Jason Xiao
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version. See the LICENSE file for the full text.
+
+本程序是自由软件，遵循 GNU 通用公共许可证第 3 版（GPL-3.0）或更新版本。
+你可以使用、修改、再分发甚至出售本程序，但再分发时必须附带完整源代码，
+并继续使用 GPL-3.0 协议。完整协议文本见 LICENSE 文件。
+使用本程序生成的视频归使用者所有，不受本协议限制。
+
+
+第三方组件
+--------------------------------------------------
+以下组件由安装程序从软件源下载，或随压缩包附带。各组件遵循其自身协议。
+
+随压缩包附带：
+- uv（bin/uv.exe）          MIT 或 Apache-2.0 双协议，Astral Software Inc.
+                            协议文本见 licenses/ 文件夹
+
+安装时自动下载：
+- Blender Python 模块（bpy） GPL-2.0-or-later，Blender Foundation
+- cascadio                  MIT；内含 Open CASCADE Technology，LGPL-2.1 附例外条款
+- NumPy                     BSD-3-Clause
+- Pillow                    MIT-CMU（HPND）
+- PyYAML                    MIT
+- imageio-ffmpeg            BSD-2-Clause；内含 FFmpeg 程序，遵循 FFmpeg 自身协议（LGPL/GPL）
+- Python                    PSF License
