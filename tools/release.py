@@ -1,8 +1,8 @@
 """Bump the version everywhere, record release notes, commit and tag.
 
 usage:
-  python tools/release.py 0.4.0 "新增 xx 运镜" "修复 xx 问题"   # bump + notes + commit + tag
-  git push && git push --tags                                   # GitHub Actions then builds the zip
+  python tools/release.py 0.4.0 "新增 xx 运镜" "修复 xx 问题"   # bump + notes + commit
+  git push                                                      # GitHub Actions builds the zip and publishes Release v0.4.0
   python tools/release.py --notes 0.4.0                         # print notes (used by the workflow)
 """
 import re
@@ -49,8 +49,7 @@ def main():
         CHANGES.write_text(head + "\n" + entry + rest, encoding="utf-8")
     subprocess.run(["git", "add", "-A"], cwd=ROOT, check=True)
     subprocess.run(["git", "commit", "-qm", f"Release v{ver}"], cwd=ROOT, check=True)
-    subprocess.run(["git", "tag", f"v{ver}"], cwd=ROOT, check=True)
-    print(f"已准备 v{ver}。运行 git push && git push --tags 发布。")
+    print(f"已准备 v{ver}。运行 git push 后会自动打包并发布。")
 
 
 if __name__ == "__main__":

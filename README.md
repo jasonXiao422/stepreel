@@ -115,10 +115,10 @@ STEP ──cascadio──▶ 网格(GLB) ──Blender(bpy)──▶ 材质/爆�
 
 ```bash
 python tools/release.py 0.4.0 "新增 xx 运镜" "修复 xx 问题"
-git push && git push --tags
+git push
 ```
 
-脚本会同步改好所有版本号、写入 CHANGELOG.md、提交并打标签。推送标签后，GitHub Actions 自动打包下载用的 zip（含 uv.exe）并发布到 Releases。用户打开界面时会看到新版本提醒。
+脚本会同步改好所有版本号、写入 CHANGELOG.md 并提交。推送后，GitHub Actions 发现版本号变了，就自动打包下载用的 zip（含 uv.exe）并发布到 Releases。版本号没变的推送不会触发发布。用户打开界面时会看到新版本提醒。
 
 ## 协议 License
 
