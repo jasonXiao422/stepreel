@@ -21,7 +21,8 @@ stepreel render 我的装配体.STEP
 
 ## 最简单的用法：网页界面
 
-1. 下载并解压本项目
+1. 到 [Releases 页面](https://github.com/jasonXiao422/stepreel/releases/latest) 下载最新的 `stepreel-vX.Y.Z.zip` 并解压
+   （不要用绿色 Code 按钮下载，那个不含 Windows 安装工具）
 2. **Windows**：双击 `start-stepreel.bat`　**macOS**：双击 `start-stepreel.command`
 3. 第一次会自动安装（约 1 GB，几分钟），之后浏览器自动打开界面
 4. 拖入 STEP 文件，选风格、填标题，点「生成预览」，满意后点「导出高清视频」
@@ -32,16 +33,21 @@ stepreel render 我的装配体.STEP
 
 ## 命令行安装
 
-解压作者提供的压缩包，在解压后的文件夹里运行：
+只需要先装 [uv](https://docs.astral.sh/uv/)（一行命令），然后：
 
 ```bash
-bin/uv.exe tool install .        # Windows
-uv tool install .                # macOS / Linux（先装 uv）
+uv tool install git+https://github.com/jasonXiao422/stepreel
 ```
+
+也可以在解压后的文件夹里运行 `uv tool install .`（Windows 可直接用自带的 `bin/uv.exe`）。
 
 uv 会自动下载正确的 Python 版本、Blender 核心模块、STEP 转换库和 ffmpeg。**不需要单独安装 Blender 软件。**
 
 有 NVIDIA / AMD / Apple 显卡会自动用显卡渲染。
+
+## 更新
+
+到 [Releases 页面](https://github.com/jasonXiao422/stepreel/releases/latest) 下载新版 zip，解压后双击 `start-stepreel.bat`，会自动升级，以前做的视频不会丢。命令行用户运行 `uv tool upgrade stepreel`。
 
 ## 30 秒上手
 
@@ -193,7 +199,7 @@ python tools/release.py 0.4.0 "新增 xx 运镜" "修复 xx 问题"
 git push
 ```
 
-脚本会同步改好所有版本号、写入 CHANGELOG.md 并提交。推送后，GitHub Actions 发现版本号变了，就自动打包下载用的 zip（含 uv.exe）放进仓库的 Releases。仓库是私有的，zip 由作者下载后自行分发给用户。版本号没变的推送不会触发打包。
+脚本会同步改好所有版本号、写入 CHANGELOG.md 并提交。推送后，GitHub Actions 发现版本号变了，就自动打包下载用的 zip（含 uv.exe）并发布到 Releases。版本号没变的推送不会触发发布。
 
 ## 协议 License
 

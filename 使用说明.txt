@@ -109,7 +109,12 @@ Fusion 360、Creo、Inventor、UG 等软件也都能导出 STEP。
        依次输入 bin\uv.exe tool uninstall stepreel 和 bin\uv.exe cache clean
 
 
-七、版权说明
+七、获取新版本
+--------------------------------------------------
+最新版本在：https://github.com/jasonXiao422/stepreel/releases/latest
+下载 zip 解压到新文件夹，双击 start-stepreel.bat 就会自动升级，以前做的视频不会丢。
+
+八、版权说明
 --------------------------------------------------
 本软件遵循 GPL-3.0 开源协议，附带完整源代码。
 你可以使用、修改、转送或转卖本软件，但须同时提供源代码，并继续使用 GPL-3.0 协议。

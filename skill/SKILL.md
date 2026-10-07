@@ -13,10 +13,11 @@ All rendering is done by the `stepreel` CLI. Your job is to translate the user's
 stepreel --help
 ```
 
-If missing, install once from the unzipped stepreel folder (uv fetches the right Python and Blender module automatically):
+If missing, install once (uv fetches the right Python and Blender module automatically):
 
 ```bash
-uv tool install .            # on Windows the bundled bin/uv.exe works too
+uv tool install git+https://github.com/jasonXiao422/stepreel
+# or, from an unzipped release folder: uv tool install .
 ```
 
 ## 1. Inspect the model (cheap, always do this first)
