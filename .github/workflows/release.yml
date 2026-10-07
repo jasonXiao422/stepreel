@@ -1,0 +1,48 @@
+name: release
+
+# Push a tag like v0.4.0 and this builds the Windows/macOS download zip
+# (source + bundled uv.exe) and publishes it as a GitHub Release.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch Windows uv.exe from PyPI
+        run: |
+          python -m pip download uv --platform win_amd64 --only-binary=:all: --no-deps -d /tmp/uv -q
+          python - <<'PY'
+          import glob, zipfile, os
+          z = zipfile.ZipFile(glob.glob('/tmp/uv/*.whl')[0])
+          os.makedirs('bin', exist_ok=True)
+          for n in z.namelist():
+              if n.endswith('/uv.exe'):
+                  open('bin/uv.exe', 'wb').write(z.read(n))
+              if '/licenses/' in n:
+                  open('licenses/uv-' + n.rsplit('/', 1)[1] + '.txt', 'wb').write(z.read(n))
+          PY
+
+      - name: Build zip
+        run: |
+          VER="${GITHUB_REF_NAME#v}"
+          mkdir -p dist/stepreel
+          rsync -a --exclude '.git' --exclude '.github' --exclude 'dist' ./ dist/stepreel/
+          chmod +x dist/stepreel/start-stepreel.command
+          cd dist && zip -qr "stepreel-v${VER}.zip" stepreel
+          ls -la
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VER="${GITHUB_REF_NAME#v}"
+          NOTES=$(python tools/release.py --notes "$VER")
+          gh release create "$GITHUB_REF_NAME" "dist/stepreel-v${VER}.zip" \
+            --title "stepreel v${VER}" --notes "$NOTES"

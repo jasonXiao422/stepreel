@@ -27,6 +27,10 @@ button,input,select{font:inherit;color:inherit}
 .cell-k{display:block;font-size:11px;color:var(--graphite);line-height:1.2}
 .cell-v{display:block;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
+.update{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 18px;background:var(--signal);color:#fff;font-size:14px}
+.update a{color:#fff;font-weight:600}
+.update button{border:0;background:none;color:#fff;cursor:pointer;font-size:18px;line-height:1;padding:0 4px}
+.ver{padding:0 18px 18px;font-size:12px;color:var(--graphite)}
 .app{display:grid;grid-template-columns:380px 1fr;height:calc(100% - 59px)}
 .form{border-right:1.5px solid var(--ink);background:var(--sheet);overflow:auto}
 .main{overflow:auto;padding:22px 28px 40px}
@@ -132,6 +136,7 @@ td.c{text-align:center;width:72px}
   <div><span class="cell-k">爆炸方向</span><span class="cell-v" id="hdAxis">—</span></div>
 </header>
 
+<div class="update" id="update" hidden><span id="updateText"></span><button id="updateClose" aria-label="关闭提示">×</button></div>
 <div class="app">
   <aside class="form" aria-label="设置">
     <section class="sec">
@@ -199,6 +204,7 @@ td.c{text-align:center;width:72px}
         <p class="hint">预览是低清草稿，几分钟出结果，先看节奏和构图。满意后再导出高清，时间取决于电脑显卡。</p>
       </div>
     </section>
+    <p class="ver" id="ver"></p>
   </aside>
 
   <main class="main">
@@ -274,6 +280,16 @@ $("#styles").addEventListener("click",e=>{const b=e.target.closest(".sw"); if(!b
   if(!accentTouched){ $("#accent").value=STYLE_ACCENT[b.dataset.style]; $("#accentHex").textContent=$("#accent").value; }
   if(!lightTouched) setPick("#lighting", STYLE_LIGHT[b.dataset.style]); });
 $("#accent").addEventListener("input",e=>{accentTouched=true; $("#accentHex").textContent=e.target.value.toUpperCase();});
+
+// ---------- version / update check
+fetch("/api/version").then(r=>r.json()).then(v=>{
+  $("#ver").textContent = `stepreel v${v.current}`;
+  if(v.newer && v.url){
+    $("#updateText").innerHTML = `有新版本 v${v.latest} 可以下载。<a href="${v.url}" target="_blank" rel="noopener">打开下载页</a>，解压后双击 start-stepreel.bat 即可自动升级。`;
+    $("#update").hidden = false;
+  }
+}).catch(()=>{});
+$("#updateClose").onclick = () => $("#update").hidden = true;
 
 // ---------- upload
 $("#pick").onclick = () => $("#file").click();

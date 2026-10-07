@@ -111,6 +111,15 @@ STEP ──cascadio──▶ 网格(GLB) ──Blender(bpy)──▶ 材质/爆�
                                                                   ──ffmpeg──▶ MP4
 ```
 
+## 发布新版本（维护者）
+
+```bash
+python tools/release.py 0.4.0 "新增 xx 运镜" "修复 xx 问题"
+git push && git push --tags
+```
+
+脚本会同步改好所有版本号、写入 CHANGELOG.md、提交并打标签。推送标签后，GitHub Actions 自动打包下载用的 zip（含 uv.exe）并发布到 Releases。用户打开界面时会看到新版本提醒。
+
 ## 协议 License
 
 GPL-3.0-or-later。可以自由使用、修改、再分发和出售，再分发时须附带源码并保持同一协议。
