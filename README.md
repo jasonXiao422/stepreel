@@ -10,9 +10,10 @@ stepreel render 我的装配体.STEP
 - 支持 SolidWorks、Fusion 360、Creo、Inventor、UG 等导出的 STEP / STP
 - 按零件名自动分材质（碳纤维、铝、钢、尼龙、塑料……），中英文名都认
 - 自动判断爆炸方向，紧固件先飞、外层先出、内层后出
-- 自动构图；5 种运镜（环绕、英雄仰拍、俯视、转台、细节揭幕）
-- 4 种打光（轮廓光、柔光棚、单灯戏剧、霓虹）和 4 种调色
-- 3 种拆解方式：分层拆开、向四周散开、逐个拆解
+- **15 种一键风格**：点一下，场景、运镜、打光、调色、节奏全部调好
+- **23 种运镜**：环绕、推拉、希区柯克变焦、从机器内部飞出、贴面掠过、螺旋俯冲、三视图平移等
+- 8 种场景、6 种打光、6 种调色，3 种拆解方式（分层、散开、逐个）
+- 界面自带新手教程，每个选项都有说明
 - 字幕、配乐、音效全部内置，无需素材
 - 一个 YAML 文件微调一切；也可以导出 .blend 用 Blender 手动精修
 - 自带 Claude Code skill：用中文描述想要的效果，AI 帮你改配置
@@ -63,11 +64,11 @@ stepreel ui                                    # 打开网页界面
 只写和默认不同的部分：
 
 ```yaml
-style: dark-studio            # 背景：dark-studio | clean-white | tech-blue
-lighting: rim                 # 打光：rim | softbox | dramatic | neon
-grade: cool                   # 调色：neutral | contrast | cool | warm
+preset: cyberrig              # 一键风格，下面的设置会在它的基础上覆盖
+style: dark-studio            # 场景
+grade: tealorange             # 调色
 camera:
-  preset: hero                # 运镜：orbit | hero | topdown | turntable | reveal
+  preset: insideout           # 运镜：从机器内部飞出
 
 explode:
   spread: 1.2                 # 炸开得更开
@@ -101,6 +102,64 @@ Claude 会读零件清单、写配置、看预览图、再正式渲染。整个�
 - **模型朝向不对**：配置里 `model.rotate: [90, 0, 0]`。
 - **渲染中断**：重新运行同一命令会从断点继续。
 - **网格太粗或太慢**：`--quality fine` / `--quality draft`。
+
+## 风格预设
+
+配置里写一行 `preset: 名字`，其余字段仍可覆盖它。界面里就是上方的「一键风格」。
+
+| preset | 名称 | 效果 |
+|---|---|---|
+| `keynote` | 发布会 | 白棚慢推，干净克制，像产品发布会开场 |
+| `midnight` | 午夜影棚 | 黑场冷暖轮廓光，经典产品片 |
+| `cyberrig` | 赛博装配线 | 霓虹螺旋上升，四散爆开，科技感拉满 |
+| `launch` | 众筹首发 | 爆点急推，节奏快，适合 Kickstarter 和新品预告 |
+| `teardown` | 拆解纪录 | 暖米色工作台俯拍，零件逐个摆开，像拆解测评 |
+| `macrovelvet` | 微距质感 | 长焦浅景深贴着零件走，慢节奏，广告质感 |
+| `shopwindow` | 电商橱窗 | 白底转台一圈，紧凑爆炸，详情页即插即用 |
+| `heavymetal` | 重工金属 | 灰棚单灯高反差，高空螺旋俯冲，大机械的分量感 |
+| `dronepass` | 无人机掠影 | 贴地低空横掠，像航拍扫过装配线 |
+| `bullettime` | 子弹时间 | 零件悬停时镜头大幅环摆，定格汇报的高光镜头 |
+| `blueprint` | 蓝图档案 | 正侧长焦平移，逐个拆解，工程图纸气质 |
+| `filmreel` | 胶片广告 | 暖调颗粒慢漂移，复古商业片 |
+| `viralshorts` | 竖屏快闪 | 9:16 贴地仰升，快节奏，抖音小红书开箱 |
+| `violetluxe` | 暗夜紫金 | 紫棚金色点缀，徐徐拉远，奢侈品开场 |
+| `insideout` | 破壳而出 | 镜头从机器内部飞出，爆炸四散，本工具的招牌镜头 |
+
+## 运镜
+
+| camera.preset | 名称 | 分类 | 效果 |
+|---|---|---|---|
+| `orbit` | 环绕 | 经典环绕 | 绕着产品转大半圈，最通用 |
+| `turntable` | 转台 | 经典环绕 | 镜头不动，产品自转一圈 |
+| `pendulum` | 钟摆 | 经典环绕 | 左右来回摆动，节奏感强 |
+| `drift` | 缓慢漂移 | 经典环绕 | 几乎不动的轻微移动，沉稳高级 |
+| `quarter` | 四分之一定格 | 经典环绕 | 停在几个角度依次切换，像多机位 |
+| `bullettime` | 子弹时间 | 经典环绕 | 零件悬停时镜头大幅环绕 |
+| `pushin` | 缓慢推进 | 推拉变焦 | 从远到近一路推上去 |
+| `pullback` | 一镜拉远 | 推拉变焦 | 从局部特写一路拉到全景 |
+| `reveal` | 细节揭幕 | 推拉变焦 | 先特写，再拉开看全貌 |
+| `crashzoom` | 急推冲击 | 推拉变焦 | 爆炸瞬间猛地推近，冲击力强 |
+| `vertigo` | 希区柯克变焦 | 推拉变焦 | 主体大小不变，背景透视在变 |
+| `insideout` | 破壳而出 | 微距穿越 | 镜头从机器内部飞出来 |
+| `macro` | 微距特写 | 微距穿越 | 长焦浅景深，贴着零件拍 |
+| `skim` | 贴面掠过 | 微距穿越 | 沿着零件表面低空滑过 |
+| `hero` | 英雄仰拍 | 航拍升降 | 低角度推近，显得高大有分量 |
+| `flyover` | 低空横掠 | 航拍升降 | 像无人机贴地扫过 |
+| `corkscrew` | 螺旋上升 | 航拍升降 | 绕着产品边转边升高 |
+| `spiralin` | 螺旋俯冲 | 航拍升降 | 从高空盘旋着压下来 |
+| `descend` | 高空降落 | 航拍升降 | 从正上方慢慢降到平视 |
+| `crane` | 摇臂升起 | 航拍升降 | 从近处特写升到高空俯瞰 |
+| `lowrise` | 贴地仰升 | 航拍升降 | 从地面视角慢慢抬高 |
+| `topdown` | 俯视 | 工程视角 | 从正上方看，像图纸 |
+| `profile` | 正侧平移 | 工程视角 | 长焦近乎正交的侧视，像三视图 |
+
+## 场景、打光、调色
+
+| 项目 | 可选值 |
+|---|---|
+| 场景 `style` | `dark-studio` 暗场影棚、`clean-white` 白色影棚、`tech-blue` 科技蓝、`graphite` 石墨灰棚、`champagne` 香槟米色、`violet` 暗夜紫、`mirror` 镜面黑、`concrete` 工业水泥 |
+| 打光 `lighting` | `rim` 轮廓光、`softbox` 柔光棚、`dramatic` 单灯戏剧、`neon` 霓虹、`threepoint` 三点布光、`golden` 黄昏暖阳 |
+| 调色 `grade` | `neutral` 原色、`contrast` 高对比、`cool` 冷调科技、`warm` 暖调胶片、`tealorange` 青橙电影、`mono` 黑白纪实 |
 
 ## 工作原理
 

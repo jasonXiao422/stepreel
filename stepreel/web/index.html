@@ -13,19 +13,23 @@
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
+img.nothumb{visibility:hidden}
 html,body{margin:0;height:100%}
 body{background:var(--paper);color:var(--ink);font:14px/1.55 var(--latin),var(--cjk);font-variant-numeric:tabular-nums}
 button,input,select{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--trace);outline-offset:2px}
 
 /* title strip: reads like the title block of a drawing */
-.strip{display:grid;grid-template-columns:auto 1fr auto auto;border-bottom:1.5px solid var(--ink);background:var(--sheet)}
+.strip{display:grid;grid-template-columns:auto 1fr auto auto auto;border-bottom:1.5px solid var(--ink);background:var(--sheet)}
 .strip>div{padding:10px 18px;border-right:1px solid var(--rule)}
 .strip>div:last-child{border-right:0}
 .brand{font:600 22px/1 var(--latin);letter-spacing:-.01em;display:flex;align-items:center;gap:10px}
 .brand svg{flex:none}
 .cell-k{display:block;font-size:11px;color:var(--graphite);line-height:1.2}
 .cell-v{display:block;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.strip .help{display:flex;align-items:center;padding:0 14px}
+.linkbtn{border:1px solid var(--ink);background:#fff;padding:6px 12px;border-radius:2px;cursor:pointer;font-size:13px;font-weight:600}
+.linkbtn:hover{background:var(--ink);color:#fff}
 
 .update{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 18px;background:var(--signal);color:#fff;font-size:14px}
 .update a{color:#fff;font-weight:600}
@@ -33,19 +37,20 @@ button,input,select{font:inherit;color:inherit}
 .ver{padding:0 18px 18px;font-size:12px;color:var(--graphite)}
 .app{display:grid;grid-template-columns:380px 1fr;height:calc(100% - 59px)}
 .form{border-right:1.5px solid var(--ink);background:var(--sheet);overflow:auto}
-.main{overflow:auto;padding:22px 28px 40px}
+.main{overflow:auto;padding:18px 28px 40px}
 
 /* form = stacked title-block cells */
 .sec{border-bottom:1px solid var(--rule)}
 .sec h2{margin:0;padding:12px 18px 0;font:600 15px/1.3 var(--latin),var(--cjk);display:flex;gap:10px;align-items:baseline}
 .sec h2 b{font:600 13px var(--latin);color:var(--signal);width:14px}
 .sec .body{padding:10px 18px 16px}
-.row{display:grid;grid-template-columns:72px 1fr 44px;align-items:center;gap:10px;margin:6px 0}
-.row label{color:var(--graphite);font-size:13px}
+.row{display:grid;grid-template-columns:84px 1fr 44px;align-items:center;gap:10px;margin:6px 0}
+.row.wide{grid-template-columns:84px 1fr}
+.row label,.lab{color:var(--graphite);font-size:13px;display:flex;align-items:center;gap:4px}
 .row output{text-align:right;font-size:13px}
 input[type=range]{width:100%;accent-color:var(--ink)}
 .field{display:block;margin:8px 0}
-.field span{display:block;font-size:12px;color:var(--graphite);margin-bottom:3px}
+.field>span{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--graphite);margin-bottom:3px}
 .field input[type=text]{width:100%;padding:7px 9px;border:1px solid var(--rule);background:#fff;border-radius:2px}
 .field input[type=text]:focus{border-color:var(--trace)}
 .pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -55,22 +60,23 @@ input[type=range]{width:100%;accent-color:var(--ink)}
 .seg button:last-child{border-right:0}
 .seg button[aria-pressed=true]{background:var(--ink);color:#fff}
 
-.styles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.sw{border:1px solid var(--rule);background:#fff;padding:0;cursor:pointer;text-align:left;border-radius:2px}
-.sw i{display:block;height:54px;position:relative}
-.sw i::after{content:"";position:absolute;right:8px;bottom:8px;width:10px;height:10px;border-radius:50%;background:var(--dot)}
-.sw span{display:block;padding:5px 7px;font-size:12px}
-.sw[aria-pressed=true]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
-.picker{margin-top:14px}
-.picker>span{display:block;font-size:12px;color:var(--graphite);margin-bottom:5px}
-.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
-.card{border:1px solid var(--rule);background:#fff;padding:0;cursor:pointer;text-align:left;border-radius:2px;overflow:hidden}
-.card img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:#14171d}
-.card b{display:block;padding:5px 7px 0;font-size:13px;font-weight:600}
-.card small{display:block;padding:0 7px 6px;font-size:11px;color:var(--graphite);line-height:1.35}
-.card[aria-pressed=true]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
-.card[aria-pressed=true] b::before{content:"";display:inline-block;width:7px;height:7px;background:var(--signal);margin-right:6px;vertical-align:1px}
-.accent{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:13px;color:var(--graphite)}
+/* "?" tip marker */
+.tip{display:inline-grid;place-items:center;width:15px;height:15px;border-radius:50%;border:1px solid var(--graphite);
+  color:var(--graphite);font:600 10px/1 var(--latin);font-style:normal;cursor:help;flex:none}
+.tip:hover,.tip:focus-visible{background:var(--ink);border-color:var(--ink);color:#fff}
+#tooltip{position:fixed;z-index:60;max-width:260px;background:var(--ink);color:#fff;font-size:12.5px;line-height:1.5;
+  padding:8px 10px;border-radius:3px;pointer-events:none;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+
+/* current choice rows in the sidebar */
+.choice{display:grid;grid-template-columns:96px 1fr auto;gap:10px;align-items:center;width:100%;margin:0 0 8px;
+  border:1px solid var(--rule);background:#fff;padding:5px;text-align:left;cursor:pointer;border-radius:2px}
+.choice:hover{border-color:var(--ink)}
+.choice img{width:96px;aspect-ratio:16/9;object-fit:cover;display:block;background:#14171d}
+.choice .k{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--graphite)}
+.choice .v{display:block;font-weight:600;font-size:14px}
+.choice .d{display:block;font-size:11.5px;color:var(--graphite);line-height:1.35}
+.choice .go{font-size:12px;color:var(--trace);padding-right:4px;white-space:nowrap}
+.accent{display:flex;align-items:center;gap:8px;margin-top:4px;font-size:13px;color:var(--graphite)}
 .accent input{width:34px;height:24px;border:1px solid var(--rule);padding:0;background:none}
 
 .actions{padding:16px 18px 22px;display:grid;gap:8px}
@@ -78,6 +84,35 @@ input[type=range]{width:100%;accent-color:var(--ink)}
 .btn.primary{background:var(--signal);border-color:var(--signal);color:#fff}
 .btn:disabled{opacity:.4;cursor:not-allowed}
 .hint{font-size:12px;color:var(--graphite);margin:0}
+
+/* one-click styles */
+.looks-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 0 8px}
+.looks-head h3{margin:0;display:flex;align-items:center;gap:6px}
+.looks-head .now{font-size:13px;color:var(--graphite)}
+.looks{display:grid;grid-auto-flow:column;grid-auto-columns:200px;gap:10px;overflow-x:auto;padding:2px 2px 10px;margin-bottom:12px;scroll-snap-type:x proximity}
+.look{border:1px solid var(--rule);background:#fff;padding:0;text-align:left;cursor:pointer;border-radius:2px;overflow:hidden;scroll-snap-align:start}
+.look img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:#14171d}
+.look b{display:block;padding:6px 8px 0;font-size:14px}
+.look small{display:block;padding:0 8px 8px;font-size:11.5px;color:var(--graphite);line-height:1.4}
+.look:hover{border-color:var(--ink)}
+.look[aria-pressed=true]{border-color:var(--signal);box-shadow:inset 0 0 0 2px var(--signal)}
+
+/* gallery dialog */
+dialog.gallery{width:min(1100px,94vw);max-height:88vh;padding:0;border:1.5px solid var(--ink);border-radius:3px;background:var(--sheet);color:var(--ink)}
+dialog.gallery::backdrop{background:rgba(20,23,29,.55)}
+.g-head{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;border-bottom:1px solid var(--rule);position:sticky;top:0;background:var(--sheet);z-index:1}
+.g-head h3{margin:0}
+.g-head p{margin:2px 0 0;font-size:12.5px;color:var(--graphite)}
+.g-close{border:0;background:none;font-size:24px;line-height:1;cursor:pointer;padding:4px 8px}
+.g-body{padding:6px 18px 20px;overflow:auto;max-height:calc(88vh - 64px)}
+.g-body h4{margin:14px 0 8px;font-size:13px;color:var(--graphite);font-weight:600}
+.g-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.card{border:1px solid var(--rule);background:#fff;padding:0;cursor:pointer;text-align:left;border-radius:2px;overflow:hidden}
+.card:hover{border-color:var(--ink)}
+.card img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:#14171d}
+.card b{display:block;padding:6px 8px 0;font-size:14px;font-weight:600}
+.card small{display:block;padding:0 8px 8px;font-size:12px;color:var(--graphite);line-height:1.4}
+.card[aria-pressed=true]{border-color:var(--signal);box-shadow:inset 0 0 0 2px var(--signal)}
 
 /* viewer = drawing sheet frame with zone markers */
 .frame{position:relative;padding:18px;border:1.5px solid var(--ink);background:var(--sheet)}
@@ -111,9 +146,25 @@ td.idx{width:40px;color:var(--graphite);text-align:center}
 td select{border:1px solid var(--rule);background:#fff;padding:3px 4px;border-radius:2px;max-width:150px}
 td .chip{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px;border:1px solid rgba(0,0,0,.2)}
 td.c{text-align:center;width:72px}
-.muted{color:var(--graphite)}
 .versions td a{color:var(--trace)}
 .err{background:#fff;border:1.5px solid var(--err);color:var(--err);padding:10px 12px;margin-top:12px;white-space:pre-wrap;font-size:12px;max-height:180px;overflow:auto}
+
+/* guided tour */
+.tour-hole{position:fixed;z-index:70;border-radius:4px;box-shadow:0 0 0 9999px rgba(20,23,29,.62);outline:2px solid var(--signal);
+  pointer-events:none;transition:all .25s ease}
+.tour-hole.center{width:0;height:0;left:50%;top:40%;outline:0}
+.tour-pop{position:fixed;z-index:71;width:340px;max-width:calc(100vw - 24px);background:#fff;border:1.5px solid var(--ink);border-radius:3px;
+  padding:14px 16px 12px;box-shadow:0 12px 30px rgba(0,0,0,.25)}
+.tour-pop .step{font-size:11.5px;color:var(--signal);font-weight:600}
+.tour-pop h4{margin:2px 0 6px;font-size:16px}
+.tour-pop p{margin:0 0 12px;font-size:13.5px;line-height:1.6;color:#2b3240}
+.tour-pop .nav{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.tour-pop .nav button{border:1px solid var(--ink);background:#fff;padding:6px 12px;border-radius:2px;cursor:pointer;font-size:13px}
+.tour-pop .nav .primary{background:var(--ink);color:#fff}
+.tour-pop .nav .skip{border:0;color:var(--graphite);padding-left:0}
+.tour-dots{display:flex;gap:4px}
+.tour-dots i{width:6px;height:6px;border-radius:50%;background:var(--rule)}
+.tour-dots i.on{background:var(--signal)}
 
 @media (max-width:900px){
   .app{grid-template-columns:1fr;height:auto}
@@ -121,7 +172,7 @@ td.c{text-align:center;width:72px}
   .strip{grid-template-columns:1fr 1fr}
   .main{padding:16px}
 }
-@media (prefers-reduced-motion:reduce){.progress i{transition:none}}
+@media (prefers-reduced-motion:reduce){.progress i,.tour-hole{transition:none}}
 </style>
 </head>
 <body>
@@ -134,12 +185,13 @@ td.c{text-align:center;width:72px}
   <div><span class="cell-k">模型</span><span class="cell-v" id="hdName">未选择</span></div>
   <div><span class="cell-k">零件</span><span class="cell-v" id="hdParts">—</span></div>
   <div><span class="cell-k">爆炸方向</span><span class="cell-v" id="hdAxis">—</span></div>
+  <div class="help"><button class="linkbtn" id="tourBtn">使用教程</button></div>
 </header>
 
 <div class="update" id="update" hidden><span id="updateText"></span><button id="updateClose" aria-label="关闭提示">×</button></div>
 <div class="app">
   <aside class="form" aria-label="设置">
-    <section class="sec">
+    <section class="sec" id="secModel">
       <h2><b>1</b>选择模型</h2>
       <div class="body">
         <button class="btn" id="pick" style="width:100%">选择 STEP 文件</button>
@@ -148,59 +200,55 @@ td.c{text-align:center;width:72px}
       </div>
     </section>
 
-    <section class="sec">
-      <h2><b>2</b>画面</h2>
+    <section class="sec" id="secLook">
+      <h2><b>2</b>画面 <i class="tip" tabindex="0" data-tip="点任意一行会打开选择窗口，缩略图就是真实渲染效果。也可以直接用右边的「一键风格」。">?</i></h2>
       <div class="body">
-        <div class="picker" style="margin-top:0"><span>背景</span></div>
-        <div class="styles" id="styles">
-          <button class="sw" data-style="dark-studio" aria-pressed="true" style="--dot:#F25213"><i style="background:radial-gradient(circle at 40% 70%,#3b4656,#07080b 70%)"></i><span>暗场影棚</span></button>
-          <button class="sw" data-style="clean-white" aria-pressed="false" style="--dot:#2F6BFF"><i style="background:radial-gradient(circle at 40% 70%,#ffffff,#d4d7dc 75%)"></i><span>白色影棚</span></button>
-          <button class="sw" data-style="tech-blue" aria-pressed="false" style="--dot:#00C2FF"><i style="background:radial-gradient(circle at 40% 70%,#123056,#01050d 70%)"></i><span>科技蓝</span></button>
-        </div>
-        <label class="accent">主色 <input type="color" id="accent" value="#F25213"> <span id="accentHex">#F25213</span>，用于塑料件和副标题</label>
-        <div class="picker"><span>运镜</span><div class="cards" id="camera"></div></div>
-        <div class="picker"><span>打光</span><div class="cards" id="lighting"></div></div>
-        <div class="picker"><span>调色</span><div class="cards" id="grade"></div></div>
+        <button class="choice" data-kind="scene" data-tipkey="scene"></button>
+        <button class="choice" data-kind="camera"></button>
+        <button class="choice" data-kind="lighting"></button>
+        <button class="choice" data-kind="grade"></button>
+        <label class="accent">主色 <input type="color" id="accent" value="#F25213"> <span id="accentHex">#F25213</span>
+          <i class="tip" tabindex="0" data-tip="塑料件和副标题文字的颜色。可以换成你的品牌色，换场景时会自动跟着变，手动改过就不再自动变。">?</i></label>
       </div>
     </section>
 
-    <section class="sec">
+    <section class="sec" id="secAnim">
       <h2><b>3</b>动画</h2>
       <div class="body">
-        <div class="row"><label for="spread">炸开程度</label><input type="range" id="spread" min="0.5" max="2" step="0.1" value="1"><output data-for="spread"></output></div>
-        <div class="row"><label for="speed">节奏</label><input type="range" id="speed" min="0.6" max="1.6" step="0.1" value="1"><output data-for="speed"></output></div>
-        <div class="row"><label for="zoom">镜头距离</label><input type="range" id="zoom" min="0.7" max="1.5" step="0.05" value="1"><output data-for="zoom"></output></div>
-        <div class="row" style="grid-template-columns:72px 1fr"><label>拆解方式</label>
-          <div class="seg" id="mode"><button data-v="layers" aria-pressed="true">分层拆开</button><button data-v="radial" aria-pressed="false">向四周散开</button><button data-v="sequential" aria-pressed="false">逐个拆解</button></div></div>
+        <div class="row"><label for="spread">炸开程度 <i class="tip" tabindex="0" data-tip="零件分开的距离。小于 1 更紧凑，大于 1 更舒展。零件太多挤在一起时调大。">?</i></label><input type="range" id="spread" min="0.5" max="2" step="0.1" value="1"><output data-for="spread"></output></div>
+        <div class="row"><label for="speed">节奏 <i class="tip" tabindex="0" data-tip="整体速度。大于 1 更快、更有冲击力，适合短视频；小于 1 更慢、更沉稳，适合高级感广告。">?</i></label><input type="range" id="speed" min="0.6" max="1.6" step="0.1" value="1"><output data-for="speed"></output></div>
+        <div class="row"><label for="zoom">镜头距离 <i class="tip" tabindex="0" data-tip="大于 1 拉远，小于 1 推近。预览里零件飞出画面时，把它调大一点。">?</i></label><input type="range" id="zoom" min="0.7" max="1.5" step="0.05" value="1"><output data-for="zoom"></output></div>
+        <div class="row wide"><span class="lab">拆解方式 <i class="tip" tabindex="0" data-tip="分层：沿一个方向一层层分开。散开：从中心向四周炸开。逐个：一种零件接一种依次飞出，像装配说明书。">?</i></span>
+          <div class="seg" id="mode"></div></div>
       </div>
     </section>
 
-    <section class="sec">
-      <h2><b>4</b>文字</h2>
+    <section class="sec" id="secText">
+      <h2><b>4</b>文字 <i class="tip" tabindex="0" data-tip="会以字幕形式出现在视频里。留空的项不显示。">?</i></h2>
       <div class="body">
         <label class="field"><span>产品名（开场大标题）</span><input type="text" id="tName" placeholder="例：壁面起降臂 V2"></label>
         <label class="field"><span>副标题</span><input type="text" id="tSub" placeholder="例：WALL-MOUNTED LIFT ARM"></label>
         <div class="pair">
-          <label class="field"><span>亮点数字</span><input type="text" id="tStat" placeholder="165"></label>
+          <label class="field"><span>亮点数字 <i class="tip" tabindex="0" data-tip="炸开时在左上角显示的大数字，比如零件数、减速比、重量。">?</i></span><input type="text" id="tStat" placeholder="165"></label>
           <label class="field"><span>数字说明</span><input type="text" id="tStatCap" placeholder="个零件"></label>
         </div>
         <label class="field"><span>片尾一句话</span><input type="text" id="tEnd" placeholder="例：SolidWorks 建模 · 代码渲染"></label>
       </div>
     </section>
 
-    <section class="sec">
+    <section class="sec" id="secOut">
       <h2><b>5</b>出片</h2>
       <div class="body">
-        <div class="row" style="grid-template-columns:72px 1fr"><label>画幅</label>
+        <div class="row wide"><span class="lab">画幅 <i class="tip" tabindex="0" data-tip="横屏适合 B 站、YouTube；竖屏适合抖音、小红书、视频号。">?</i></span>
           <div class="seg" id="aspect"><button data-v="landscape" aria-pressed="true">横屏 16:9</button><button data-v="vertical" aria-pressed="false">竖屏 9:16</button></div></div>
-        <div class="row" style="grid-template-columns:72px 1fr"><label>高清画质</label>
+        <div class="row wide"><span class="lab">高清画质 <i class="tip" tabindex="0" data-tip="只影响「导出高清视频」。720p 快很多，发短视频足够；1080p 最清晰，时间约是 720p 的 2 到 3 倍。">?</i></span>
           <div class="seg" id="quality"><button data-v="standard" aria-pressed="true">720p 较快</button><button data-v="high" aria-pressed="false">1080p 最清晰</button></div></div>
-        <div class="row" style="grid-template-columns:72px 1fr"><label>声音</label>
+        <div class="row wide"><span class="lab">声音 <i class="tip" tabindex="0" data-tip="自动合成的背景音乐，加上爆炸和合拢的音效。不用担心版权。">?</i></span>
           <div class="seg" id="audio"><button data-v="on" aria-pressed="true">配乐和音效</button><button data-v="off" aria-pressed="false">静音</button></div></div>
       </div>
-      <div class="actions">
-        <button class="btn primary" id="btnPreview" disabled>生成预览</button>
-        <button class="btn" id="btnRender" disabled>导出高清视频</button>
+      <div class="actions" id="actions">
+        <button class="btn primary" id="btnPreview" disabled data-tip="低清草稿，几分钟出结果，用来检查节奏和构图。">生成预览</button>
+        <button class="btn" id="btnRender" disabled data-tip="正式成片。时间取决于显卡和画质，可以随时取消。">导出高清视频</button>
         <p class="hint">预览是低清草稿，几分钟出结果，先看节奏和构图。满意后再导出高清，时间取决于电脑显卡。</p>
       </div>
     </section>
@@ -208,7 +256,15 @@ td.c{text-align:center;width:72px}
   </aside>
 
   <main class="main">
-    <div class="frame">
+    <div id="looksWrap">
+      <div class="looks-head">
+        <h3>一键风格 <i class="tip" tabindex="0" data-tip="点一个风格，就把场景、运镜、打光、调色、节奏和拆解方式全部调好。之后还能在左边单独微调。">?</i></h3>
+        <span class="now" id="lookNow">未选择，使用左侧设置</span>
+      </div>
+      <div class="looks" id="looks"></div>
+    </div>
+
+    <div class="frame" id="frame">
       <div class="zones-x" aria-hidden="true"><span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span></div>
       <div class="zones-y" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span></div>
       <div class="stage" id="stage">
@@ -223,9 +279,9 @@ td.c{text-align:center;width:72px}
     </div>
 
     <h3 id="verTitle" hidden>出片记录</h3>
-    <table class="versions" id="versions" hidden><thead><tr><th>类型</th><th>完成时间</th><th>用时</th><th></th></tr></thead><tbody></tbody></table>
+    <table class="versions" id="versions" hidden><thead><tr><th>类型</th><th>风格</th><th>完成时间</th><th>用时</th><th></th></tr></thead><tbody></tbody></table>
 
-    <h3 id="bomTitle" hidden>零件明细表</h3>
+    <h3 id="bomTitle" hidden>零件明细表 <i class="tip" tabindex="0" data-tip="每种零件的材质可以单独改。勾选「最后飞出」的零件会在其他零件之后单独登场，适合突出电机、核心模块。">?</i></h3>
     <p class="hint" id="bomHint" hidden>材质按零件名自动判断，可以逐项修改。勾选“最后飞出”的零件会在其他零件之后单独飞出，适合突出电机、核心模块。</p>
     <table id="bom" hidden>
       <thead><tr><th>序号</th><th>零件名称</th><th>数量</th><th>材质</th><th>最后飞出</th></tr></thead>
@@ -234,52 +290,188 @@ td.c{text-align:center;width:72px}
   </main>
 </div>
 
+<dialog class="gallery" id="gallery" aria-labelledby="gTitle">
+  <div class="g-head"><div><h3 id="gTitle"></h3><p id="gSub"></p></div><button class="g-close" id="gClose" aria-label="关闭">×</button></div>
+  <div class="g-body" id="gBody"></div>
+</dialog>
+<div id="tooltip" role="tooltip" hidden></div>
+
 <script>
 const $ = s => document.querySelector(s);
 const MATS = [["auto","自动"],["carbon","碳纤维"],["steel","钢"],["aluminum","铝"],["brass","黄铜"],["nylon","尼龙"],
   ["rubber","橡胶"],["pcb","电路板"],["accent","主色塑料"],["black","黑色塑料"],["white","白色塑料"],["anodized","阳极黑铝"]];
 const CHIP = {carbon:"#202226",steel:"#B9BCC2",aluminum:"#D4D7DC",brass:"#C9963F",nylon:"#E3DFD3",rubber:"#111",pcb:"#1E5B36",black:"#151517",white:"#E8E6E1",anodized:"#2B2D31"};
-const STYLE_ACCENT = {"dark-studio":"#F25213","clean-white":"#2F6BFF","tech-blue":"#00C2FF"};
-let project = null, current = null, poll = null, view = "video", accentTouched = false;
-let lightTouched = false;
-const PICKS = {
-  camera: [["orbit","环绕","绕着产品转大半圈"],["hero","英雄仰拍","低角度推近，显得有分量"],["topdown","俯视","像看图纸，适合平面机构"],
-           ["turntable","转台","镜头不动，产品自转一圈"],["reveal","细节揭幕","从局部特写拉到全景"]],
-  lighting: [["rim","轮廓光","冷暖边光勾出轮廓"],["softbox","柔光棚","均匀明亮，像官网产品图"],["dramatic","单灯戏剧","一盏顶光，明暗强烈"],["neon","霓虹","青色和品红边光"]],
-  grade: [["neutral","原色","不做额外调色"],["contrast","高对比","更硬朗、更饱和"],["cool","冷调科技","暗部偏青，干净利落"],["warm","暖调胶片","柔和、有颗粒感"]],
+const KIND = {
+  scene:{label:"场景", sub:"背景和地面。深色更显质感，白色适合电商。", tip:"背景和地面的样子。换场景时，主色和打光会自动搭配。"},
+  camera:{label:"运镜", sub:"镜头怎么动。缩略图会动，就是真实的镜头路线。", tip:"镜头怎么动。一共 23 种，分 5 类：环绕、推拉、微距穿越、航拍升降、工程视角。"},
+  lighting:{label:"打光", sub:"灯光布置，决定明暗和轮廓。", tip:"灯光布置，决定明暗和轮廓。换场景时会自动搭配，手动选过就不再自动变。"},
+  grade:{label:"调色", sub:"最后的整体色调，像滤镜。", tip:"最后加在整个画面上的色调，像手机修图的滤镜。"},
 };
-const THUMB = {camera:"webp", lighting:"jpg", grade:"jpg"};
-const STYLE_LIGHT = {"dark-studio":"rim","clean-white":"softbox","tech-blue":"neon"};
-for (const [key, list] of Object.entries(PICKS)) {
-  const box = document.getElementById(key);
-  list.forEach(([v,name,desc],i)=>{
-    const b = document.createElement("button"); b.className="card"; b.dataset.v=v; b.setAttribute("aria-pressed", i===0);
-    b.innerHTML = `<img alt="" loading="lazy" src="/thumbs/${key}-${v}.${THUMB[key]}"><b>${name}</b><small>${desc}</small>`;
-    box.append(b);
-  });
-  box.addEventListener("click", e => { const b=e.target.closest(".card"); if(!b) return;
-    box.querySelectorAll(".card").forEach(x=>x.setAttribute("aria-pressed", x===b)); if(key==="lighting") lightTouched=true; });
-}
-const pickVal = id => document.querySelector(id+' .card[aria-pressed="true"]').dataset.v;
-function setPick(id, v){ document.querySelectorAll(id+" .card").forEach(x=>x.setAttribute("aria-pressed", x.dataset.v===v)); }
+let LIB = null, project = null, current = null, poll = null, view = "video";
+const state = {scene:"dark-studio", camera:"orbit", lighting:"rim", grade:"neutral"};
+let look = null, lookDirty = false, accentTouched = false, lightTouched = false;
 const versions = [];
+const find = (kind,id) => (LIB[kind]||[]).find(x=>x.id===id) || {};
+const esc = t => String(t).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
+// ---------- library-driven pickers
+fetch("/api/library").then(r=>r.json()).then(lib=>{
+  LIB = lib;
+  const seg = $("#mode");
+  lib.mode.forEach((m,i)=>{ const b=document.createElement("button"); b.dataset.v=m.id; b.textContent=m.name;
+    b.setAttribute("aria-pressed", i===0); seg.append(b); });
+  const box = $("#looks");
+  lib.presets.forEach(p=>{
+    const b = document.createElement("button"); b.className="look"; b.dataset.v=p.id; b.setAttribute("aria-pressed","false");
+    b.innerHTML = `<img alt="" loading="lazy" src="${p.thumb}" onerror="this.className='nothumb'"><b>${esc(p.name)}</b><small>${esc(p.desc)}</small>`;
+    b.onclick = () => applyLook(p.id); box.append(b);
+  });
+  renderChoices(); maybeStartTour();
+});
+
+function renderChoices(){
+  document.querySelectorAll(".choice").forEach(el=>{
+    const k = el.dataset.kind, it = find(k, state[k]);
+    el.innerHTML = `<img alt="" src="${it.thumb||""}" onerror="this.className='nothumb'"><span><span class="k">${KIND[k].label} <i class="tip" tabindex="0" data-tip="${esc(KIND[k].tip)}">?</i></span>
+      <span class="v">${esc(it.name||state[k])}</span><span class="d">${esc(it.desc||"")}</span></span><span class="go">更换</span>`;
+    el.setAttribute("aria-label", `${KIND[k].label}：${it.name||state[k]}，点击更换`);
+  });
+}
+document.querySelectorAll(".choice").forEach(el=>el.addEventListener("click", e=>{
+  if(e.target.classList.contains("tip")) return; openGallery(el.dataset.kind); }));
+
+function openGallery(kind){
+  $("#gTitle").textContent = "选择" + KIND[kind].label;
+  $("#gSub").textContent = KIND[kind].sub;
+  const body = $("#gBody"); body.innerHTML = "";
+  const groups = kind==="camera" ? LIB.camera_groups : [null];
+  groups.forEach(g=>{
+    if(g){ const h=document.createElement("h4"); h.textContent=g; body.append(h); }
+    const grid = document.createElement("div"); grid.className="g-grid"; body.append(grid);
+    LIB[kind].filter(it=>!g || it.group===g).forEach(it=>{
+      const b=document.createElement("button"); b.className="card"; b.setAttribute("aria-pressed", it.id===state[kind]);
+      b.innerHTML = `<img alt="" loading="lazy" src="${it.thumb}" onerror="this.className='nothumb'"><b>${esc(it.name)}</b><small>${esc(it.desc)}</small>`;
+      b.onclick = () => { choose(kind, it.id, true); $("#gallery").close(); };
+      grid.append(b);
+    });
+  });
+  $("#gallery").showModal();
+  const sel = body.querySelector('.card[aria-pressed="true"]'); if(sel) sel.scrollIntoView({block:"nearest"});
+}
+$("#gClose").onclick = () => $("#gallery").close();
+$("#gallery").addEventListener("click", e => { if(e.target.id==="gallery") $("#gallery").close(); });
+
+function choose(kind, id, byUser){
+  state[kind] = id;
+  if(kind==="scene" && byUser){
+    const sc = find("scene", id);
+    if(!accentTouched && sc.accent) setAccent(sc.accent);
+    if(!lightTouched && sc.lighting) state.lighting = sc.lighting;
+  }
+  if(kind==="lighting" && byUser) lightTouched = true;
+  if(byUser) markDirty();
+  renderChoices();
+}
+function setAccent(v){ $("#accent").value=v; $("#accentHex").textContent=v.toUpperCase(); }
+
+function applyLook(id){
+  const p = LIB.presets.find(x=>x.id===id), s = p.set;
+  look = id; lookDirty = false; accentTouched = false; lightTouched = false;
+  if(s.style) state.scene = s.style;
+  state.camera = s.camera || "orbit";
+  state.lighting = s.lighting || find("scene", state.scene).lighting || "rim";
+  state.grade = s.grade || "neutral";
+  setAccent(s.accent || find("scene", state.scene).accent || "#F25213");
+  setRange("speed", s.speed); setRange("spread", s.spread);
+  setSeg("#mode", s.mode || "layers"); setSeg("#aspect", s.aspect || "landscape"); setAspect();
+  renderChoices(); renderLookNow();
+}
+function markDirty(){ if(look && !lookDirty){ lookDirty = true; renderLookNow(); } }
+function renderLookNow(){
+  document.querySelectorAll(".look").forEach(b=>b.setAttribute("aria-pressed", b.dataset.v===look));
+  const p = look && LIB.presets.find(x=>x.id===look);
+  $("#lookNow").textContent = !p ? "未选择，使用左侧设置" : lookDirty ? `基于「${p.name}」，已手动调整` : `当前：${p.name}`;
+}
+
+// ---------- basic controls
 function seg(id){ const el=$(id); el.addEventListener("click",e=>{const b=e.target.closest("button"); if(!b) return;
-  el.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed", x===b)); if(id==="#aspect") setAspect();}); }
+  el.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed", x===b)); if(id==="#aspect") setAspect(); markDirty();}); }
 const segVal = id => $(id+' [aria-pressed="true"]').dataset.v;
+function setSeg(id,v){ $(id).querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed", x.dataset.v===v)); }
 ["#mode","#aspect","#quality","#audio"].forEach(seg);
 function setAspect(){ $("#stage").classList.toggle("vertical", segVal("#aspect")==="vertical"); }
+function fmtRange(r){ document.querySelector(`output[data-for="${r.id}"]`).textContent = "×"+Number(r.value).toFixed(r.step<0.1?2:1); }
+function setRange(id,v){ const r=$("#"+id); r.value=v; fmtRange(r); }
+document.querySelectorAll('input[type=range]').forEach(r=>{ r.addEventListener("input",()=>{fmtRange(r); markDirty();}); fmtRange(r); });
+$("#accent").addEventListener("input",e=>{accentTouched=true; $("#accentHex").textContent=e.target.value.toUpperCase(); markDirty();});
 
-document.querySelectorAll('input[type=range]').forEach(r=>{
-  const o=document.querySelector(`output[data-for="${r.id}"]`);
-  const fmt=()=>o.textContent = "×"+Number(r.value).toFixed(r.step<0.1?2:1);
-  r.addEventListener("input",fmt); fmt();
-});
-$("#styles").addEventListener("click",e=>{const b=e.target.closest(".sw"); if(!b) return;
-  document.querySelectorAll(".sw").forEach(x=>x.setAttribute("aria-pressed",x===b));
-  if(!accentTouched){ $("#accent").value=STYLE_ACCENT[b.dataset.style]; $("#accentHex").textContent=$("#accent").value; }
-  if(!lightTouched) setPick("#lighting", STYLE_LIGHT[b.dataset.style]); });
-$("#accent").addEventListener("input",e=>{accentTouched=true; $("#accentHex").textContent=e.target.value.toUpperCase();});
+// ---------- tooltips for every [data-tip]
+const tipEl = $("#tooltip");
+function showTip(el){
+  tipEl.textContent = el.dataset.tip; tipEl.hidden = false;
+  const r = el.getBoundingClientRect(), t = tipEl.getBoundingClientRect();
+  let x = Math.min(Math.max(8, r.left + r.width/2 - t.width/2), innerWidth - t.width - 8);
+  let y = r.bottom + 8; if(y + t.height > innerHeight - 8) y = r.top - t.height - 8;
+  tipEl.style.left = x+"px"; tipEl.style.top = y+"px";
+}
+document.addEventListener("mouseover", e=>{ const el=e.target.closest("[data-tip]"); if(el) showTip(el); });
+document.addEventListener("mouseout", e=>{ if(e.target.closest("[data-tip]")) tipEl.hidden = true; });
+document.addEventListener("focusin", e=>{ const el=e.target.closest(".tip"); if(el) showTip(el); });
+document.addEventListener("focusout", e=>{ if(e.target.closest(".tip")) tipEl.hidden = true; });
+document.addEventListener("scroll", ()=>tipEl.hidden=true, true);
+
+// ---------- guided tour
+const TOUR = [
+  {sel:null, title:"欢迎使用 stepreel", text:"把 SolidWorks、Fusion 等软件导出的 STEP 装配体，几分钟做成产品爆炸动画。跟着走一遍，大约 1 分钟。"},
+  {sel:"#frame", title:"第 1 步：放入模型", text:"把 STEP 文件拖到这里，或者点左上角「选择 STEP 文件」。零件多的模型需要半分钟左右读取。"},
+  {sel:"#looksWrap", title:"第 2 步：选一个一键风格", text:"每个风格都配好了场景、运镜、打光、调色和节奏。缩略图会动，就是真实效果。新手直接选一个就能出好看的片子。"},
+  {sel:"#secLook", title:"想自己搭配？", text:"这里可以单独换场景、运镜、打光和调色。点任意一行会打开选择窗口，一共 23 种运镜。"},
+  {sel:"#secAnim", title:"调整动画", text:"炸开程度、节奏、镜头距离和拆解方式。鼠标停在 ? 上可以看每一项的说明。"},
+  {sel:"#secText", title:"加上文字", text:"产品名、副标题、亮点数字和片尾一句话。留空的项不会显示。"},
+  {sel:"#actions", title:"出片", text:"先点「生成预览」，几分钟出一个低清草稿检查节奏。满意后点「导出高清视频」，做好的视频在下方「出片记录」里下载。"},
+  {sel:"#tourBtn", title:"随时回来看", text:"想再看一遍教程，点这里。所有带 ? 的地方，鼠标停上去都有说明。"},
+];
+let tourI = -1, hole = null, pop = null;
+function maybeStartTour(){ let done=false; try{ done = localStorage.getItem("stepreel-tour-v1")==="done"; }catch(e){} if(!done) startTour(); }
+function startTour(){ endTour(false); tourI = 0;
+  hole = document.createElement("div"); hole.className="tour-hole";
+  pop = document.createElement("div"); pop.className="tour-pop"; pop.setAttribute("role","dialog"); pop.setAttribute("aria-live","polite");
+  document.body.append(hole, pop); renderTour(); document.addEventListener("keydown", tourKey); addEventListener("resize", renderTour); }
+function endTour(save=true){
+  if(hole){ hole.remove(); pop.remove(); hole = pop = null; }
+  document.removeEventListener("keydown", tourKey); removeEventListener("resize", renderTour);
+  if(save){ try{ localStorage.setItem("stepreel-tour-v1","done"); }catch(e){} }
+  tourI = -1;
+}
+function tourKey(e){ if(e.key==="Escape") endTour(); if(e.key==="ArrowRight") step(1); if(e.key==="ArrowLeft") step(-1); }
+function step(d){ const n = tourI + d; if(n<0) return; if(n>=TOUR.length) return endTour(); tourI=n; renderTour(); }
+function renderTour(){
+  if(tourI<0) return;
+  const s = TOUR[tourI], el = s.sel && document.querySelector(s.sel);
+  pop.innerHTML = `<div class="step">${tourI+1} / ${TOUR.length}</div><h4>${s.title}</h4><p>${s.text}</p>
+    <div class="nav"><button class="skip">跳过教程</button><div class="tour-dots">${TOUR.map((_,i)=>`<i class="${i===tourI?"on":""}"></i>`).join("")}</div>
+    <span>${tourI>0?'<button class="prev">上一步</button> ':''}<button class="primary next">${tourI===TOUR.length-1?"开始使用":"下一步"}</button></span></div>`;
+  pop.querySelector(".skip").onclick = () => endTour();
+  pop.querySelector(".next").onclick = () => step(1);
+  const pv = pop.querySelector(".prev"); if(pv) pv.onclick = () => step(-1);
+  pop.querySelector(".next").focus();
+  if(!el){ hole.className="tour-hole center"; hole.removeAttribute("style");
+    pop.style.left = (innerWidth/2 - pop.offsetWidth/2)+"px"; pop.style.top = (innerHeight*0.32)+"px"; return; }
+  hole.className = "tour-hole";
+  el.scrollIntoView({block:"nearest", inline:"nearest"});
+  requestAnimationFrame(()=>{
+    const r = el.getBoundingClientRect(), pad = 6;
+    const top = Math.max(4, r.top-pad), bottom = Math.min(innerHeight-4, r.bottom+pad);
+    Object.assign(hole.style, {left:(r.left-pad)+"px", top:top+"px", width:(r.width+pad*2)+"px", height:(bottom-top)+"px"});
+    const pw = pop.offsetWidth, ph = pop.offsetHeight;
+    let x, y;
+    if(r.right + 16 + pw < innerWidth){ x = r.right + 16; y = Math.min(Math.max(12, r.top), innerHeight - ph - 12); }
+    else if(r.left - 16 - pw > 0){ x = r.left - 16 - pw; y = Math.min(Math.max(12, r.top), innerHeight - ph - 12); }
+    else { x = Math.min(Math.max(12, r.left), innerWidth - pw - 12); y = bottom + 12 + ph < innerHeight ? bottom + 12 : Math.max(12, top - ph - 12); }
+    pop.style.left = x+"px"; pop.style.top = y+"px";
+  });
+}
+$("#tourBtn").onclick = startTour;
 
 // ---------- version / update check
 fetch("/api/version").then(r=>r.json()).then(v=>{
@@ -302,7 +494,7 @@ document.addEventListener("drop",e=>{const f=e.dataTransfer.files[0]; if(f) uplo
 
 async function upload(f){
   if(!/\.(step|stp)$/i.test(f.name)){ showErr("请选择 .step 或 .stp 文件。在 CAD 软件里用“另存为”导出 STEP 格式。"); return; }
-  hideErr(); setStatus(`正在读取 ${f.name}，零件多的模型需要半分钟左右…`, ""); setBar(null);
+  hideErr(); setStatus(`正在读取 ${esc(f.name)}，零件多的模型需要半分钟左右…`, ""); setBar(null);
   $("#btnPreview").disabled = $("#btnRender").disabled = true;
   const r = await fetch("/api/upload?name="+encodeURIComponent(f.name),{method:"POST",body:f});
   const d = await r.json();
@@ -336,19 +528,23 @@ function renderProject(){
   });
   ["#bom","#bomTitle","#bomHint"].forEach(s=>$(s).hidden=false);
   $("#drop").querySelector("strong").textContent = "模型已就绪";
-  $("#drop").querySelector("small").textContent = "点左边“生成预览”看效果。想换模型可以再拖一个 STEP 进来。";
+  $("#drop").querySelector("small").textContent = "选一个上方的一键风格，或在左边自己搭配，然后点「生成预览」。想换模型可以再拖一个 STEP 进来。";
 }
 
 function form(){
   const materials={}, last={};
   document.querySelectorAll("#bom select").forEach(s=>{ if(s.value!=="auto") materials[s.dataset.name]=s.value; });
   document.querySelectorAll("#bom input[type=checkbox]").forEach(c=>{ if(c.checked) last[c.dataset.name]=true; });
-  return { style: document.querySelector('.sw[aria-pressed="true"]').dataset.style,
+  return { preset: look, style: state.scene, camera: state.camera, lighting: state.lighting, grade: state.grade,
     accent: $("#accent").value, spread:+$("#spread").value, speed:+$("#speed").value, zoom:+$("#zoom").value,
-    camera:pickVal("#camera"), lighting:pickVal("#lighting"), grade:pickVal("#grade"), mode:segVal("#mode"), aspect:segVal("#aspect"), quality:segVal("#quality"),
+    mode:segVal("#mode"), aspect:segVal("#aspect"), quality:segVal("#quality"),
     audio: segVal("#audio")==="on", materials, last,
     titles:{name:$("#tName").value.trim(), sub:$("#tSub").value.trim(), stat:$("#tStat").value.trim(),
             statcap:$("#tStatCap").value.trim(), end:$("#tEnd").value.trim()} };
+}
+function describe(){
+  const p = look && LIB.presets.find(x=>x.id===look);
+  return p && !lookDirty ? p.name : `${find("scene",state.scene).name||""} · ${find("camera",state.camera).name||""}`;
 }
 
 // ---------- jobs
@@ -359,12 +555,13 @@ async function start(mode){
   const r = await fetch("/api/job",{method:"POST",headers:{"Content-Type":"application/json"},
     body:JSON.stringify({project:project.id, mode, form:form()})});
   const j = await r.json(); if(!r.ok){ showErr(j.error); return; }
-  current = j; track();
+  current = j; current.label = describe(); track();
 }
 function track(){
   clearInterval(poll);
+  const label0 = current.label;
   const tick = async () => {
-    const j = await (await fetch("/api/job/"+current.id)).json(); current = j;
+    const j = await (await fetch("/api/job/"+current.id)).json(); j.label = label0; current = j;
     const label = j.mode==="preview" ? "预览" : "高清视频";
     const pct = j.total ? Math.round(100*j.done/j.total) : 0;
     setBar(j.status==="done" ? 100 : pct);
@@ -395,7 +592,7 @@ function addVersion(j){
   versions.unshift(j); $("#versions").hidden = $("#verTitle").hidden = false;
   const tb = $("#versions tbody"); tb.innerHTML = "";
   versions.forEach(v=>{ const tr=document.createElement("tr"); const d=new Date(v.finished*1000);
-    tr.innerHTML = `<td>${v.mode==="preview"?"预览":"高清"}</td><td>${d.toLocaleTimeString()}</td><td>${fmtTime(v.finished-v.started)}</td>
+    tr.innerHTML = `<td>${v.mode==="preview"?"预览":"高清"}</td><td>${esc(v.label||"")}</td><td>${d.toLocaleTimeString()}</td><td>${fmtTime(v.finished-v.started)}</td>
       <td><a href="#" data-id="${v.id}">播放</a>　<a href="/files/${v.project}/${v.output}?download=1" download>下载</a></td>`;
     tb.append(tr); });
 }

@@ -137,6 +137,13 @@ def grade(img, name="neutral", vignette=0.0):
         a = sat(a, 0.9)
         rng = np.random.default_rng(int(a.sum() * 1000) % 2**32)
         a = a + rng.normal(0, 0.012, a.shape[:2])[..., None]  # light grain
+    elif name == "tealorange":
+        shadows = (1 - luma) ** 1.6
+        a = a + shadows * np.array([-0.05, 0.03, 0.06]) + luma ** 1.4 * np.array([0.07, 0.025, -0.05])
+        a = sat(scurve(a, 1.15), 1.05)
+    elif name == "mono":
+        l = (a * [0.2126, 0.7152, 0.0722]).sum(-1, keepdims=True)
+        a = scurve(np.repeat(l, 3, -1), 1.3)
     if vignette:
         h, w = a.shape[:2]
         yy, xx = np.mgrid[0:h, 0:w]

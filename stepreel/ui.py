@@ -17,6 +17,8 @@ from urllib.parse import parse_qs, unquote, urlparse
 
 import yaml
 
+from . import config as C
+
 mimetypes.add_type("image/webp", ".webp")
 mimetypes.add_type("video/mp4", ".mp4")
 
@@ -37,6 +39,30 @@ MATERIALS = {  # UI choice -> config material
 QUALITY = {"standard": ([1280, 720], 16), "high": ([1920, 1080], 32)}
 REPO = "jasonXiao422/stepreel"
 _UPDATE = {}
+
+
+def library():
+    """Everything the UI offers, from the single source in config.py."""
+    def items(info, kind, ext):
+        return [{"id": k, "name": v[0], "desc": v[1], **({"group": v[2]} if len(v) > 2 else {}),
+                 "thumb": f"/thumbs/{kind}-{k}.{ext}"} for k, v in info.items()]
+    presets = []
+    for k, p in C.PRESETS.items():
+        c = p["config"]
+        res = c.get("output", {}).get("resolution")
+        presets.append({"id": k, "name": p["name"], "desc": p["desc"], "thumb": f"/thumbs/preset-{k}.webp",
+                        "set": {"style": c.get("style"), "lighting": c.get("lighting"), "grade": c.get("grade"),
+                                "camera": c.get("camera", {}).get("preset"), "accent": c.get("accent"),
+                                "speed": c.get("speed", 1.0), "spread": c.get("explode", {}).get("spread", 1.0),
+                                "mode": c.get("explode", {}).get("mode", "layers"),
+                                "aspect": "vertical" if res and res[1] > res[0] else "landscape"}})
+    return {"presets": presets,
+            "scene": [dict(i, accent=C.STYLES[i["id"]]["accent"], lighting=C.STYLES[i["id"]]["lighting"])
+                      for i in items(C.SCENE_INFO, "scene", "jpg")],
+            "camera": items(C.CAMERA_INFO, "camera", "webp"), "camera_groups": C.CAMERA_GROUPS,
+            "lighting": items(C.LIGHT_INFO, "lighting", "jpg"),
+            "grade": items(C.GRADE_INFO, "grade", "jpg"),
+            "mode": [{"id": k, "name": v[0], "desc": v[1]} for k, v in C.EXPLODE_INFO.items()]}
 
 
 def check_update():
@@ -102,10 +128,13 @@ def build_config(form):
     late = [n for n, v in (form.get("last") or {}).items() if v]
     if late:
         cfg["explode"]["overrides"] = [{"match": "^" + re.escape(n) + "$", "delay": 0.9} for n in late]
+    if form.get("preset") in C.PRESETS:
+        cfg["preset"] = form["preset"]
+    # title timing follows the real timeline (preset + speed)
+    tl = C.load_dict(cfg)["timeline"]
+    intro, ex, hold, asm = tl["intro"], tl["explode"], tl["hold"], tl["assemble"]
+    total = intro + ex + hold + asm + tl["outro"]
     t = form.get("titles") or {}
-    T = 1 / cfg["speed"]
-    intro, ex, hold, asm = 2.0 * T, 2.2 * T, 1.6 * T, 1.6 * T
-    total = intro + ex + hold + asm + 0.8 * T
     if t.get("name"):
         cfg["titles"].append({"text": t["name"], "style": "title", "start": 0.3, "end": intro + 0.2, "position": "bottom-left"})
     if t.get("sub"):
@@ -230,6 +259,8 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if u.path in ("/", "/index.html"):
                 return self._file(WEB / "index.html")
+            if u.path == "/api/library":
+                return self._json(library())
             if u.path == "/api/version":
                 return self._json(check_update())
             if u.path == "/api/jobs":
