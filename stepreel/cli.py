@@ -70,7 +70,7 @@ def _progress_render(bpy, sc, frames_dir):
         print(f"[stepreel] 渲染完成，用时 {time.time() - t0:.0f} 秒")
 
 
-def _compose(cfg, frames_dir, out_dir, step=1):
+def _compose(cfg, frames_dir, out_dir, step=1, with_text=True):
     from PIL import Image
     from .overlay import draw_titles, grade
     os.makedirs(out_dir, exist_ok=True)
@@ -80,7 +80,8 @@ def _compose(cfg, frames_dir, out_dir, step=1):
     for i, f in enumerate(files):
         t = i * step / fps
         img = grade(Image.open(f).convert("RGB"), cfg["grade"], vig)
-        img = draw_titles(img, t, cfg["titles"], cfg["style"], cfg.get("font"), cfg["_accent"])
+        if with_text:
+            img = draw_titles(img, t, cfg["titles"], cfg["style"], cfg.get("font"), cfg["_accent"], cfg.get("text"))
         img.save(os.path.join(out_dir, f"c_{i + 1:04d}.png"), compress_level=1)
     return files
 
@@ -142,6 +143,13 @@ def _make_video(args, mode):
             audio = mixed
     out = args.output or (cfg["output"]["file"] if mode == "render" else "preview.mp4")
     _encode(cfg, comp, audio, out, step)
+    text = cfg.get("text") or {}
+    if mode == "render" and text.get("clean_copy") and text.get("enabled", True) and cfg["titles"]:
+        clean_dir = os.path.join(wd, "comp_clean")
+        _compose(cfg, frames, clean_dir, step, with_text=False)
+        clean_out = os.path.splitext(out)[0] + "_clean.mp4"
+        _encode(cfg, clean_dir, audio, clean_out, step)
+        print(f"[stepreel] 无文字版 {clean_out}")
     if mode == "preview":
         _contact_sheet(comp, os.path.splitext(out)[0] + "_sheet.png")
 
@@ -197,7 +205,7 @@ def cmd_still(args):
         sc.render.filepath = os.path.abspath(out)
         bpy.ops.render.render(write_still=True)
         img = grade(Image.open(out).convert("RGB"), cfg["grade"], 0.25 if cfg["style"] != "clean-white" else 0.0)
-        img = draw_titles(img, t, cfg["titles"], cfg["style"], cfg.get("font"), cfg["_accent"])
+        img = draw_titles(img, t, cfg["titles"], cfg["style"], cfg.get("font"), cfg["_accent"], cfg.get("text"))
         img.save(out)
         print(f"[stepreel] 静帧 {out}")
 

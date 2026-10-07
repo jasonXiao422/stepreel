@@ -84,6 +84,15 @@ titles: []                     # 字幕，例：
 #  - {text: "165", style: stat, caption: "个零件", start: 3.4, end: 5.9, position: top-left}
 #  - {text: "SolidWorks 建模 · 代码渲染", style: caption, start: 7.0, end: 8.2, position: bottom}
 font: auto                     # 或字体文件路径；auto 会找系统中文字体
+text:
+  enabled: true                # false = 不加任何文字（自己在剪辑软件里加）
+  style: classic               # 字幕样式：classic 经典 | minimal 极简细字 | impact 粗体冲击 | tech 科技标注 | editorial 杂志衬线 | cinema 电影字幕
+  color: auto                  # auto | white | black | accent | "#RRGGBB"
+  size: 1.0                    # 文字整体大小倍数
+  position: auto               # auto（跟随样式）| bottom-left | bottom | center | top-left
+  animation: auto              # auto（跟随样式）| fade 淡入 | rise 上滑 | type 打字机 | expand 展开
+  backdrop: shadow             # shadow 阴影 | plate 半透明底板 | none
+  clean_copy: false            # true = 正式渲染时额外导出一份无文字版（xxx_clean.mp4）
 
 audio:
   enabled: true

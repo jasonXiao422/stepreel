@@ -42,7 +42,8 @@ _UPDATE = {}
 
 
 def library():
-    """Everything the UI offers, from the single source in config.py."""
+    """Everything the UI offers, from the single source in config.py / overlay.py."""
+    from . import overlay as O
     def items(info, kind, ext):
         return [{"id": k, "name": v[0], "desc": v[1], **({"group": v[2]} if len(v) > 2 else {}),
                  "thumb": f"/thumbs/{kind}-{k}.{ext}"} for k, v in info.items()]
@@ -62,7 +63,10 @@ def library():
             "camera": items(C.CAMERA_INFO, "camera", "webp"), "camera_groups": C.CAMERA_GROUPS,
             "lighting": items(C.LIGHT_INFO, "lighting", "jpg"),
             "grade": items(C.GRADE_INFO, "grade", "jpg"),
-            "mode": [{"id": k, "name": v[0], "desc": v[1]} for k, v in C.EXPLODE_INFO.items()]}
+            "mode": [{"id": k, "name": v[0], "desc": v[1]} for k, v in C.EXPLODE_INFO.items()],
+            "text": [{"id": k, "name": v["name"], "desc": v["desc"], "thumb": f"/thumbs/text-{k}.jpg"}
+                     for k, v in O.TEXT_STYLES.items()],
+            "text_positions": O.TEXT_POSITIONS, "text_anims": O.TEXT_ANIMS, "text_backdrops": O.TEXT_BACKDROPS}
 
 
 def check_update():
@@ -100,6 +104,55 @@ def project_dir(pid):
 
 
 # ------------------------------------------------------------------ config from UI form
+def text_cfg(f):
+    """UI text options -> config `text` block (validated, unknown values fall back to defaults)."""
+    from .overlay import TEXT_ANIMS, TEXT_BACKDROPS, TEXT_DEFAULTS, TEXT_POSITIONS, TEXT_STYLES
+    out = dict(TEXT_DEFAULTS)
+    out["enabled"] = bool(f.get("enabled", True))
+    if f.get("style") in TEXT_STYLES:
+        out["style"] = f["style"]
+    c = str(f.get("color") or "auto")
+    if c in ("auto", "white", "black", "accent") or re.fullmatch(r"#[0-9a-fA-F]{6}", c):
+        out["color"] = c
+    try:
+        out["size"] = min(1.6, max(0.6, float(f.get("size", 1.0))))
+    except (TypeError, ValueError):
+        pass
+    if f.get("position") in TEXT_POSITIONS:
+        out["position"] = f["position"]
+    if f.get("animation") in TEXT_ANIMS:
+        out["animation"] = f["animation"]
+    if f.get("backdrop") in TEXT_BACKDROPS:
+        out["backdrop"] = f["backdrop"]
+    out["clean_copy"] = bool(f.get("clean_copy", False))
+    return out
+
+
+def text_preview(q):
+    """Render the current text settings over the chosen scene thumbnail (fast, Pillow only)."""
+    import io
+    from PIL import Image
+    from .overlay import draw_titles
+    style = q.get("style") if q.get("style") in C.STYLES else "dark-studio"
+    bg = WEB / "thumbs" / f"scene-{style}.jpg"
+    img = Image.open(bg).convert("RGB").resize((960, 540)) if bg.exists() else Image.new("RGB", (960, 540), (20, 23, 29))
+    t = q.get("titles") or {}
+    titles = []
+    if t.get("name"):
+        titles.append({"text": t["name"], "style": "title", "start": 0, "end": 99})
+    if t.get("sub"):
+        titles.append({"text": t["sub"], "style": "subtitle", "start": 0, "end": 99})
+    if t.get("stat"):
+        titles.append({"text": t["stat"], "style": "stat", "caption": t.get("statcap", ""), "start": 0, "end": 99})
+    if t.get("end") and not (t.get("name") or t.get("sub")):
+        titles.append({"text": t["end"], "style": "caption", "start": 0, "end": 99})
+    accent = q.get("accent") if re.fullmatch(r"#[0-9a-fA-F]{6}", str(q.get("accent"))) else None
+    img = draw_titles(img, 5.0, titles, style, None, accent, text_cfg(q.get("text") or {}))
+    buf = io.BytesIO()
+    img.save(buf, "JPEG", quality=88)
+    return buf.getvalue()
+
+
 def build_config(form):
     cfg = {
         "style": form.get("style", "dark-studio"),
@@ -113,6 +166,7 @@ def build_config(form):
     }
     if form.get("accent"):
         cfg["accent"] = form["accent"]
+    cfg["text"] = text_cfg(form.get("text") or {})
     vertical = form.get("aspect") == "vertical"
     res, samples = QUALITY.get(form.get("quality", "standard"), QUALITY["standard"])
     cfg["output"]["resolution"] = [res[1], res[0]] if vertical else list(res)
@@ -193,6 +247,9 @@ def run_job(job):
         sheet = out.replace(".mp4", "_sheet.png")
         if (pdir / sheet).exists():
             job["sheet"] = sheet
+        clean = out.replace(".mp4", "_clean.mp4")
+        if (pdir / clean).exists():
+            job["clean"] = clean
     else:
         job.update(status="error", phase="出错", log="\n".join(tail))
 
@@ -259,6 +316,15 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if u.path in ("/", "/index.html"):
                 return self._file(WEB / "index.html")
+            if u.path == "/api/textpreview":
+                body = text_preview(json.loads(parse_qs(u.query).get("q", ["{}"])[0]))
+                self.send_response(200)
+                self.send_header("Content-Type", "image/jpeg")
+                self.send_header("Content-Length", str(len(body)))
+                self.send_header("Cache-Control", "no-store")
+                self.end_headers()
+                self.wfile.write(body)
+                return
             if u.path == "/api/library":
                 return self._json(library())
             if u.path == "/api/version":

@@ -56,6 +56,10 @@ Then edit `stepreel.yaml`. Keep edits minimal; untouched keys use defaults. Map 
 | "竖屏 / 抖音" | `output.resolution: [1080, 1920]` |
 | "镜头近一点 / 角度高一点" | `camera.zoom`, `camera.elevation` |
 | "加标题 / 卖点" | `titles` (styles: title, subtitle, stat, caption) |
+| "字幕换个风格 / 字太小 / 换颜色" | `text.style` (classic / minimal / impact / tech / editorial / cinema), `text.size`, `text.color` |
+| "不要文字 / 我自己剪辑加字" | `text.enabled: false` |
+| "字看不清" | `text.backdrop: plate` |
+| "要一份没字的" | `text.clean_copy: true` (writes `<output>_clean.mp4`) |
 | "用我的音乐" | `audio.music: path` |
 | "模型躺倒了 / 朝向不对" | `model.rotate: [90, 0, 0]` etc. |
 

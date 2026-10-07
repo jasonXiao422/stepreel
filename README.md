@@ -13,6 +13,7 @@ stepreel render 我的装配体.STEP
 - **15 种一键风格**：点一下，场景、运镜、打光、调色、节奏全部调好
 - **23 种运镜**：环绕、推拉、希区柯克变焦、从机器内部飞出、贴面掠过、螺旋俯冲、三视图平移等
 - 8 种场景、6 种打光、6 种调色，3 种拆解方式（分层、散开、逐个）
+- 6 种字幕样式（经典、极简细字、粗体冲击、科技标注、杂志衬线、电影字幕），可改颜色、大小、位置、出场动画；也可以完全不加文字，或额外导出一份无文字版
 - 界面自带新手教程，每个选项都有说明
 - 字幕、配乐、音效全部内置，无需素材
 - 一个 YAML 文件微调一切；也可以导出 .blend 用 Blender 手动精修
@@ -160,6 +161,20 @@ Claude 会读零件清单、写配置、看预览图、再正式渲染。整个�
 | 场景 `style` | `dark-studio` 暗场影棚、`clean-white` 白色影棚、`tech-blue` 科技蓝、`graphite` 石墨灰棚、`champagne` 香槟米色、`violet` 暗夜紫、`mirror` 镜面黑、`concrete` 工业水泥 |
 | 打光 `lighting` | `rim` 轮廓光、`softbox` 柔光棚、`dramatic` 单灯戏剧、`neon` 霓虹、`threepoint` 三点布光、`golden` 黄昏暖阳 |
 | 调色 `grade` | `neutral` 原色、`contrast` 高对比、`cool` 冷调科技、`warm` 暖调胶片、`tealorange` 青橙电影、`mono` 黑白纪实 |
+
+## 文字
+
+```yaml
+text:
+  enabled: true        # false = 不加任何文字
+  style: impact        # classic 经典 | minimal 极简细字 | impact 粗体冲击 | tech 科技标注 | editorial 杂志衬线 | cinema 电影字幕
+  color: auto          # auto | white | black | accent | "#RRGGBB"
+  size: 1.0
+  position: auto       # auto | bottom-left | bottom | center | top-left
+  animation: auto      # auto | fade | rise | type | expand
+  backdrop: shadow     # shadow | plate | none
+  clean_copy: true     # 另外导出 out_clean.mp4（无文字）
+```
 
 ## 工作原理
 

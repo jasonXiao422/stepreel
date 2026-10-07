@@ -1,7 +1,8 @@
 """Render the UI thumbnails from an example model.
 
 usage: python tools/make_thumbs.py model.step stepreel.yaml out_dir [camera scene lighting grade preset] [--only name,name]
-Animated .webp for cameras and presets, .jpg stills for scenes, lighting and grades.
+Animated .webp for cameras and presets, .jpg stills for scenes, lighting and grades,
+text-style samples drawn over the scene stills (kind "text", Pillow only).
 """
 import copy
 import os
@@ -20,7 +21,7 @@ only = None
 if "--only" in args:
     i = args.index("--only"); only = set(args[i + 1].split(",")); del args[i:i + 2]
 step, cfgp, out = args[:3]
-kinds = args[3:] or ["camera", "scene", "lighting", "grade", "preset"]
+kinds = args[3:] or ["camera", "scene", "lighting", "grade", "preset", "text"]
 os.makedirs(out, exist_ok=True)
 glb = step_to_glb(step, ".")
 tmp = os.path.abspath(os.path.join(out, "_tmp")); os.makedirs(tmp, exist_ok=True)
@@ -108,3 +109,15 @@ if "preset" in kinds:
             c["titles"] = []; c["output"]["resolution"] = [1920, 1080]
             animated(c, os.path.join(out, f"preset-{name}.webp"), 14)
             print("preset", name, flush=True)
+
+if "text" in kinds:
+    from stepreel.overlay import TEXT_STYLES, draw_titles
+    sample = [{"text": "产品名称", "style": "title", "start": 0, "end": 99},
+              {"text": "PRODUCT NAME", "style": "subtitle", "start": 0, "end": 99},
+              {"text": "165", "style": "stat", "caption": "个零件", "start": 0, "end": 99}]
+    bg = Image.open(os.path.join(out, "scene-dark-studio.jpg")).convert("RGB").resize((800, 450))
+    for name in TEXT_STYLES:
+        if want(name):
+            im = draw_titles(bg, 5.0, sample, "dark-studio", None, "#F25213", {"style": name, "size": 1.7})
+            im.resize((400, 225), Image.LANCZOS).save(os.path.join(out, f"text-{name}.jpg"), quality=88)
+            print("text", name, flush=True)

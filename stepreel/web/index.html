@@ -76,6 +76,11 @@ input[type=range]{width:100%;accent-color:var(--ink)}
 .choice .v{display:block;font-weight:600;font-size:14px}
 .choice .d{display:block;font-size:11.5px;color:var(--graphite);line-height:1.35}
 .choice .go{font-size:12px;color:var(--trace);padding-right:4px;white-space:nowrap}
+.sel{width:100%;border:1px solid var(--ink);border-radius:2px;background:#fff;padding:6px 8px;font-size:13px}
+.tprev{position:relative;margin:12px 0 8px;border:1px solid var(--ink);background:#14171d;aspect-ratio:16/9}
+.tprev img{display:block;width:100%;height:100%;object-fit:cover}
+.tprev span{position:absolute;right:6px;top:5px;font-size:11px;color:#fff;background:rgba(0,0,0,.45);padding:1px 6px;border-radius:2px}
+.check{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--ink);margin-top:10px;cursor:pointer}
 .accent{display:flex;align-items:center;gap:8px;margin-top:4px;font-size:13px;color:var(--graphite)}
 .accent input{width:34px;height:24px;border:1px solid var(--rule);padding:0;background:none}
 
@@ -224,15 +229,31 @@ td.c{text-align:center;width:72px}
     </section>
 
     <section class="sec" id="secText">
-      <h2><b>4</b>文字 <i class="tip" tabindex="0" data-tip="会以字幕形式出现在视频里。留空的项不显示。">?</i></h2>
+      <h2><b>4</b>文字 <i class="tip" tabindex="0" data-tip="会以字幕形式出现在视频里。留空的项不显示。不想要文字，选「不加文字」，适合自己在剪辑软件里做字幕。">?</i></h2>
       <div class="body">
-        <label class="field"><span>产品名（开场大标题）</span><input type="text" id="tName" placeholder="例：壁面起降臂 V2"></label>
-        <label class="field"><span>副标题</span><input type="text" id="tSub" placeholder="例：WALL-MOUNTED LIFT ARM"></label>
-        <div class="pair">
-          <label class="field"><span>亮点数字 <i class="tip" tabindex="0" data-tip="炸开时在左上角显示的大数字，比如零件数、减速比、重量。">?</i></span><input type="text" id="tStat" placeholder="165"></label>
-          <label class="field"><span>数字说明</span><input type="text" id="tStatCap" placeholder="个零件"></label>
+        <div class="seg" id="textOn" style="margin-bottom:10px"><button data-v="on" aria-pressed="true">加文字</button><button data-v="off" aria-pressed="false">不加文字</button></div>
+        <p class="hint" id="textOffHint" hidden>视频里不会出现任何文字，适合自己在剪映、PR、达芬奇里加字幕。</p>
+        <div id="textOpts">
+          <label class="field"><span>产品名（开场大标题）</span><input type="text" id="tName" placeholder="例：壁面起降臂 V2"></label>
+          <label class="field"><span>副标题</span><input type="text" id="tSub" placeholder="例：WALL-MOUNTED LIFT ARM"></label>
+          <div class="pair">
+            <label class="field"><span>亮点数字 <i class="tip" tabindex="0" data-tip="炸开时显示的大字，比如零件数、减速比、重量。也可以写一个词。">?</i></span><input type="text" id="tStat" placeholder="165"></label>
+            <label class="field"><span>数字说明</span><input type="text" id="tStatCap" placeholder="个零件"></label>
+          </div>
+          <label class="field"><span>片尾一句话</span><input type="text" id="tEnd" placeholder="例：SolidWorks 建模 · 代码渲染"></label>
+
+          <div class="tprev"><img id="tPrev" alt="文字效果预览"><span>文字效果预览</span></div>
+          <button class="choice" data-kind="text"></button>
+          <div class="row wide"><span class="lab">颜色 <i class="tip" tabindex="0" data-tip="自动：跟着场景选最清楚的颜色。主色：用上面「画面」里设的主色。也可以自定义任意颜色。">?</i></span>
+            <div class="seg" id="tColor"><button data-v="auto" aria-pressed="true">自动</button><button data-v="white" aria-pressed="false">白</button><button data-v="black" aria-pressed="false">黑</button><button data-v="accent" aria-pressed="false">主色</button><button data-v="custom" aria-pressed="false">自定</button></div></div>
+          <label class="accent" id="tCustomWrap" hidden>自定义颜色 <input type="color" id="tCustom" value="#FFFFFF"> <span id="tCustomHex">#FFFFFF</span></label>
+          <div class="row"><label for="tSize">大小 <i class="tip" tabindex="0" data-tip="所有文字一起放大或缩小，大小比例保持协调。竖屏视频可以调大一点。">?</i></label><input type="range" id="tSize" min="0.7" max="1.5" step="0.05" value="1"><output data-for="tSize"></output></div>
+          <div class="row wide"><label for="tPos">位置</label><select id="tPos" class="sel"></select></div>
+          <div class="row wide"><label for="tAnim">出场动画 <i class="tip" tabindex="0" data-tip="文字出现的方式。打字机会一个字一个字打出来，展开是字距从宽收紧。">?</i></label><select id="tAnim" class="sel"></select></div>
+          <div class="row wide"><span class="lab">底衬 <i class="tip" tabindex="0" data-tip="文字压在亮的地方看不清时，用阴影或半透明底板。">?</i></span>
+            <div class="seg" id="tBack"><button data-v="shadow" aria-pressed="true">阴影</button><button data-v="plate" aria-pressed="false">底板</button><button data-v="none" aria-pressed="false">无</button></div></div>
+          <label class="check"><input type="checkbox" id="tClean"> 导出高清时，另外再出一份无文字版 <i class="tip" tabindex="0" data-tip="一次渲染得到两个视频：带文字的成片，加上一份干净的无文字版，方便以后自己改字幕。几乎不增加渲染时间。">?</i></label>
         </div>
-        <label class="field"><span>片尾一句话</span><input type="text" id="tEnd" placeholder="例：SolidWorks 建模 · 代码渲染"></label>
       </div>
     </section>
 
@@ -306,9 +327,10 @@ const KIND = {
   camera:{label:"运镜", sub:"镜头怎么动。缩略图会动，就是真实的镜头路线。", tip:"镜头怎么动。一共 23 种，分 5 类：环绕、推拉、微距穿越、航拍升降、工程视角。"},
   lighting:{label:"打光", sub:"灯光布置，决定明暗和轮廓。", tip:"灯光布置，决定明暗和轮廓。换场景时会自动搭配，手动选过就不再自动变。"},
   grade:{label:"调色", sub:"最后的整体色调，像滤镜。", tip:"最后加在整个画面上的色调，像手机修图的滤镜。"},
+  text:{label:"字幕样式", sub:"字体、排版和装饰。下面还可以单独改颜色、大小、位置和动画。", tip:"字体、排版和装饰的组合。选好后可以在下面单独改颜色、大小、位置和动画。"},
 };
 let LIB = null, project = null, current = null, poll = null, view = "video";
-const state = {scene:"dark-studio", camera:"orbit", lighting:"rim", grade:"neutral"};
+const state = {scene:"dark-studio", camera:"orbit", lighting:"rim", grade:"neutral", text:"classic"};
 let look = null, lookDirty = false, accentTouched = false, lightTouched = false;
 const versions = [];
 const find = (kind,id) => (LIB[kind]||[]).find(x=>x.id===id) || {};
@@ -326,7 +348,9 @@ fetch("/api/library").then(r=>r.json()).then(lib=>{
     b.innerHTML = `<img alt="" loading="lazy" src="${p.thumb}" onerror="this.className='nothumb'"><b>${esc(p.name)}</b><small>${esc(p.desc)}</small>`;
     b.onclick = () => applyLook(p.id); box.append(b);
   });
-  renderChoices(); maybeStartTour();
+  for(const [id, opts] of [["#tPos", lib.text_positions], ["#tAnim", lib.text_anims]])
+    for(const [v,t] of Object.entries(opts)){ const o=document.createElement("option"); o.value=v; o.textContent=t; $(id).append(o); }
+  renderChoices(); maybeStartTour(); updateTextPreview();
 });
 
 function renderChoices(){
@@ -369,8 +393,8 @@ function choose(kind, id, byUser){
     if(!lightTouched && sc.lighting) state.lighting = sc.lighting;
   }
   if(kind==="lighting" && byUser) lightTouched = true;
-  if(byUser) markDirty();
-  renderChoices();
+  if(byUser && kind!=="text") markDirty();
+  renderChoices(); updateTextPreview();
 }
 function setAccent(v){ $("#accent").value=v; $("#accentHex").textContent=v.toUpperCase(); }
 
@@ -384,7 +408,7 @@ function applyLook(id){
   setAccent(s.accent || find("scene", state.scene).accent || "#F25213");
   setRange("speed", s.speed); setRange("spread", s.spread);
   setSeg("#mode", s.mode || "layers"); setSeg("#aspect", s.aspect || "landscape"); setAspect();
-  renderChoices(); renderLookNow();
+  renderChoices(); renderLookNow(); updateTextPreview();
 }
 function markDirty(){ if(look && !lookDirty){ lookDirty = true; renderLookNow(); } }
 function renderLookNow(){
@@ -399,11 +423,41 @@ function seg(id){ const el=$(id); el.addEventListener("click",e=>{const b=e.targ
 const segVal = id => $(id+' [aria-pressed="true"]').dataset.v;
 function setSeg(id,v){ $(id).querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed", x.dataset.v===v)); }
 ["#mode","#aspect","#quality","#audio"].forEach(seg);
+["#textOn","#tColor","#tBack"].forEach(id=>{ const el=$(id); el.addEventListener("click",e=>{const b=e.target.closest("button"); if(!b) return;
+  el.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed", x===b)); textChanged();}); });
+function textOn(){ return segVal("#textOn")==="on"; }
+function textColor(){ const c=segVal("#tColor"); return c==="custom" ? $("#tCustom").value : c; }
+function textChanged(){
+  $("#textOpts").hidden = !textOn(); $("#textOffHint").hidden = textOn();
+  $("#tCustomWrap").hidden = segVal("#tColor")!=="custom";
+  updateTextPreview();
+}
+$("#tCustom").addEventListener("input",e=>{ $("#tCustomHex").textContent=e.target.value.toUpperCase(); updateTextPreview(); });
+["#tName","#tSub","#tStat","#tStatCap","#tEnd","#tSize","#tPos","#tAnim","#tClean"].forEach(id=>$(id).addEventListener("input", updateTextPreview));
+function textSettings(){
+  return {enabled:textOn(), style:state.text, color:textColor(), size:+$("#tSize").value, position:$("#tPos").value||"auto",
+          animation:$("#tAnim").value||"auto", backdrop:segVal("#tBack"), clean_copy:$("#tClean").checked};
+}
+function titleTexts(){
+  return {name:$("#tName").value.trim(), sub:$("#tSub").value.trim(), stat:$("#tStat").value.trim(),
+          statcap:$("#tStatCap").value.trim(), end:$("#tEnd").value.trim()};
+}
+let tpTimer = null;
+function updateTextPreview(){
+  clearTimeout(tpTimer);
+  tpTimer = setTimeout(()=>{
+    if(!textOn()) return;
+    const t = titleTexts();
+    if(!t.name && !t.sub && !t.stat && !t.end){ t.name = $("#tName").placeholder.replace(/^例：/,""); t.sub = $("#tSub").placeholder.replace(/^例：/,""); }
+    const q = {style:state.scene, accent:$("#accent").value, text:textSettings(), titles:t};
+    $("#tPrev").src = "/api/textpreview?q=" + encodeURIComponent(JSON.stringify(q));
+  }, 250);
+}
 function setAspect(){ $("#stage").classList.toggle("vertical", segVal("#aspect")==="vertical"); }
 function fmtRange(r){ document.querySelector(`output[data-for="${r.id}"]`).textContent = "×"+Number(r.value).toFixed(r.step<0.1?2:1); }
 function setRange(id,v){ const r=$("#"+id); r.value=v; fmtRange(r); }
-document.querySelectorAll('input[type=range]').forEach(r=>{ r.addEventListener("input",()=>{fmtRange(r); markDirty();}); fmtRange(r); });
-$("#accent").addEventListener("input",e=>{accentTouched=true; $("#accentHex").textContent=e.target.value.toUpperCase(); markDirty();});
+document.querySelectorAll('input[type=range]').forEach(r=>{ r.addEventListener("input",()=>{fmtRange(r); if(r.id!=="tSize") markDirty();}); fmtRange(r); });
+$("#accent").addEventListener("input",e=>{accentTouched=true; $("#accentHex").textContent=e.target.value.toUpperCase(); markDirty(); updateTextPreview();});
 
 // ---------- tooltips for every [data-tip]
 const tipEl = $("#tooltip");
@@ -427,7 +481,7 @@ const TOUR = [
   {sel:"#looksWrap", title:"第 2 步：选一个一键风格", text:"每个风格都配好了场景、运镜、打光、调色和节奏。缩略图会动，就是真实效果。新手直接选一个就能出好看的片子。"},
   {sel:"#secLook", title:"想自己搭配？", text:"这里可以单独换场景、运镜、打光和调色。点任意一行会打开选择窗口，一共 23 种运镜。"},
   {sel:"#secAnim", title:"调整动画", text:"炸开程度、节奏、镜头距离和拆解方式。鼠标停在 ? 上可以看每一项的说明。"},
-  {sel:"#secText", title:"加上文字", text:"产品名、副标题、亮点数字和片尾一句话。留空的项不会显示。"},
+  {sel:"#secText", title:"加上文字", text:"填产品名、副标题、亮点数字和片尾一句话，下面能选字幕样式、颜色、大小和动画，预览图会实时变化。不想要文字就选「不加文字」。"},
   {sel:"#actions", title:"出片", text:"先点「生成预览」，几分钟出一个低清草稿检查节奏。满意后点「导出高清视频」，做好的视频在下方「出片记录」里下载。"},
   {sel:"#tourBtn", title:"随时回来看", text:"想再看一遍教程，点这里。所有带 ? 的地方，鼠标停上去都有说明。"},
 ];
@@ -539,8 +593,7 @@ function form(){
     accent: $("#accent").value, spread:+$("#spread").value, speed:+$("#speed").value, zoom:+$("#zoom").value,
     mode:segVal("#mode"), aspect:segVal("#aspect"), quality:segVal("#quality"),
     audio: segVal("#audio")==="on", materials, last,
-    titles:{name:$("#tName").value.trim(), sub:$("#tSub").value.trim(), stat:$("#tStat").value.trim(),
-            statcap:$("#tStatCap").value.trim(), end:$("#tEnd").value.trim()} };
+    text: textSettings(), titles: titleTexts() };
 }
 function describe(){
   const p = look && LIB.presets.find(x=>x.id===look);
@@ -593,7 +646,7 @@ function addVersion(j){
   const tb = $("#versions tbody"); tb.innerHTML = "";
   versions.forEach(v=>{ const tr=document.createElement("tr"); const d=new Date(v.finished*1000);
     tr.innerHTML = `<td>${v.mode==="preview"?"预览":"高清"}</td><td>${esc(v.label||"")}</td><td>${d.toLocaleTimeString()}</td><td>${fmtTime(v.finished-v.started)}</td>
-      <td><a href="#" data-id="${v.id}">播放</a>　<a href="/files/${v.project}/${v.output}?download=1" download>下载</a></td>`;
+      <td><a href="#" data-id="${v.id}">播放</a>　<a href="/files/${v.project}/${v.output}?download=1" download>下载</a>${v.clean?`　<a href="/files/${v.project}/${v.clean}?download=1" download>无文字版</a>`:""}</td>`;
     tb.append(tr); });
 }
 $("#versions").onclick = e => { const a=e.target.closest("a[data-id]"); if(!a) return; e.preventDefault();
