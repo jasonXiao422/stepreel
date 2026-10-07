@@ -16,7 +16,7 @@ stepreel --help
 If missing, install once (uv fetches the right Python and Blender module automatically):
 
 ```bash
-uv tool install git+https://github.com/<owner>/stepreel
+uv tool install git+https://github.com/jasonXiao422/stepreel
 ```
 
 ## 1. Inspect the model (cheap, always do this first)

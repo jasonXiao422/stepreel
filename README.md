@@ -33,7 +33,7 @@ stepreel render 我的装配体.STEP
 只需要先装 [uv](https://docs.astral.sh/uv/)（一行命令），然后：
 
 ```bash
-uv tool install git+https://github.com/<owner>/stepreel
+uv tool install git+https://github.com/jasonXiao422/stepreel
 ```
 
 uv 会自动下载正确的 Python 版本、Blender 核心模块、STEP 转换库和 ffmpeg。**不需要单独安装 Blender 软件。**
