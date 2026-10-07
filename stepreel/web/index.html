@@ -31,9 +31,6 @@ button,input,select{font:inherit;color:inherit}
 .linkbtn{border:1px solid var(--ink);background:#fff;padding:6px 12px;border-radius:2px;cursor:pointer;font-size:13px;font-weight:600}
 .linkbtn:hover{background:var(--ink);color:#fff}
 
-.update{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 18px;background:var(--signal);color:#fff;font-size:14px}
-.update a{color:#fff;font-weight:600}
-.update button{border:0;background:none;color:#fff;cursor:pointer;font-size:18px;line-height:1;padding:0 4px}
 .ver{padding:0 18px 18px;font-size:12px;color:var(--graphite)}
 .app{display:grid;grid-template-columns:380px 1fr;height:calc(100% - 59px)}
 .form{border-right:1.5px solid var(--ink);background:var(--sheet);overflow:auto}
@@ -197,7 +194,6 @@ td.c{text-align:center;width:72px}
   <div class="help"><button class="linkbtn" id="tourBtn">使用教程</button></div>
 </header>
 
-<div class="update" id="update" hidden><span id="updateText"></span><button id="updateClose" aria-label="关闭提示">×</button></div>
 <div class="app">
   <aside class="form" aria-label="设置">
     <section class="sec" id="secModel">
@@ -538,14 +534,7 @@ function renderTour(){
 $("#tourBtn").onclick = startTour;
 
 // ---------- version / update check
-fetch("/api/version").then(r=>r.json()).then(v=>{
-  $("#ver").textContent = `stepreel v${v.current}`;
-  if(v.newer && v.url){
-    $("#updateText").innerHTML = `有新版本 v${v.latest} 可以下载。<a href="${v.url}" target="_blank" rel="noopener">打开下载页</a>，解压后双击 start-stepreel.bat 即可自动升级。`;
-    $("#update").hidden = false;
-  }
-}).catch(()=>{});
-$("#updateClose").onclick = () => $("#update").hidden = true;
+fetch("/api/version").then(r=>r.json()).then(v=>{ $("#ver").textContent = `stepreel v${v.current}`; }).catch(()=>{});
 
 // ---------- upload
 $("#pick").onclick = () => $("#file").click();

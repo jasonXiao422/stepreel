@@ -37,8 +37,6 @@ MATERIALS = {  # UI choice -> config material
     "anodized": {"type": "anodized", "color": "#2B2D31"},
 }
 QUALITY = {"standard": ([1280, 720], 16), "high": ([1920, 1080], 32)}
-REPO = "jasonXiao422/stepreel"
-_UPDATE = {}
 
 
 def library():
@@ -70,22 +68,10 @@ def library():
             "text_positions": O.TEXT_POSITIONS, "text_anims": O.TEXT_ANIMS, "text_backdrops": O.TEXT_BACKDROPS}
 
 
-def check_update():
-    """Latest GitHub release vs installed version. Silent on any network problem."""
+def version_info():
+    """Installed version only. No network calls: updates are distributed by the author directly."""
     from . import __version__
-    if "latest" not in _UPDATE:
-        try:
-            import urllib.request
-            req = urllib.request.Request(f"https://api.github.com/repos/{REPO}/releases/latest",
-                                         headers={"Accept": "application/vnd.github+json", "User-Agent": "stepreel"})
-            with urllib.request.urlopen(req, timeout=4) as r:
-                d = json.loads(r.read().decode())
-            _UPDATE.update(latest=d.get("tag_name", "").lstrip("v"), url=d.get("html_url"))
-        except Exception:
-            _UPDATE.update(latest=None, url=None)
-    ver = lambda v: tuple(int(x) for x in re.findall(r"\d+", v or "0")[:3])
-    newer = bool(_UPDATE["latest"]) and ver(_UPDATE["latest"]) > ver(__version__)
-    return {"current": __version__, "latest": _UPDATE["latest"], "url": _UPDATE["url"], "newer": newer}
+    return {"current": __version__}
 
 
 def _cli(*args):
@@ -329,7 +315,7 @@ class Handler(BaseHTTPRequestHandler):
             if u.path == "/api/library":
                 return self._json(library())
             if u.path == "/api/version":
-                return self._json(check_update())
+                return self._json(version_info())
             if u.path == "/api/jobs":
                 return self._json([public(j) for j in sorted(JOBS.values(), key=lambda j: j["created"])])
             if m := re.fullmatch(r"/api/job/(\w+)", u.path):

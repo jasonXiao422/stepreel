@@ -12,7 +12,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 CHANGES = ROOT / "CHANGELOG.md"
-DOWNLOAD_HINT = "下载下面的 zip，解压后双击 start-stepreel.bat（Mac 双击 start-stepreel.command），详见压缩包里的 使用说明.txt。已安装旧版的用户同样操作，会自动升级。"
+DOWNLOAD_HINT = "解压 zip 后双击 start-stepreel.bat（Mac 双击 start-stepreel.command），详见压缩包里的 使用说明.txt。已安装旧版的用户同样操作，会自动升级。"
 
 
 def notes_for(ver):
