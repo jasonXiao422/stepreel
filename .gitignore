@@ -7,3 +7,4 @@ __pycache__/
 *.blend1
 parts.json
 !examples/**/*.png
+bin/uv.exe
