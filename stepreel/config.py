@@ -14,6 +14,8 @@ output:
   fps: 24
 
 style: dark-studio             # dark-studio | clean-white | tech-blue
+accent: null                   # 主色（塑料件和副标题），例 "#F25213"；null = 用风格默认色
+speed: 1.0                     # 整体节奏，>1 更快，<1 更慢
 
 model:
   rotate: [0, 0, 0]            # 模型整体旋转（度），朝向不对时调
@@ -151,6 +153,10 @@ def load(path=None):
     if cfg["style"] not in STYLES:
         raise SystemExit(f"未知风格 style: {cfg['style']}，可选: {', '.join(STYLES)}")
     style = STYLES[cfg["style"]]
+    cfg["_accent"] = cfg.get("accent") or style["accent"]
+    sp = float(cfg.get("speed") or 1.0)
+    if sp != 1.0:
+        cfg["timeline"] = {k: v / sp for k, v in cfg["timeline"].items()}
     # resolve placeholders
     for g in cfg["explode"]["groups"]:
         g["match"] = g["match"].replace("FASTENERS", FASTENER_RE)
@@ -158,7 +164,7 @@ def load(path=None):
         m["match"] = m["match"].replace("FASTENERS", FASTENER_RE)
         mat = m["material"]
         if isinstance(mat, dict) and mat.get("color") == "ACCENT":
-            mat["color"] = style["accent"]
+            mat["color"] = cfg["_accent"]
     t = cfg["timeline"]
     cfg["duration"] = t["intro"] + t["explode"] + t["hold"] + t["assemble"] + t["outro"]
     return cfg

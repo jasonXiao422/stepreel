@@ -6,6 +6,7 @@
   stepreel still   模型.STEP --at 1 4  渲染指定时刻的高质量静帧
   stepreel render  模型.STEP           正式渲染成片
   stepreel blend   模型.STEP           导出 .blend，用 Blender 软件手动精调
+  stepreel ui                         打开网页界面
 """
 import argparse
 import glob
@@ -78,7 +79,7 @@ def _compose(cfg, frames_dir, out_dir, step=1):
     for i, f in enumerate(files):
         t = i * step / fps
         img = Image.open(f).convert("RGB")
-        img = draw_titles(img, t, cfg["titles"], cfg["style"], cfg.get("font"))
+        img = draw_titles(img, t, cfg["titles"], cfg["style"], cfg.get("font"), cfg["_accent"])
         img.save(os.path.join(out_dir, f"c_{i + 1:04d}.png"), compress_level=1)
     return files
 
@@ -194,7 +195,7 @@ def cmd_still(args):
         out = f"still_{t:.1f}s.png"
         sc.render.filepath = os.path.abspath(out)
         bpy.ops.render.render(write_still=True)
-        img = draw_titles(Image.open(out).convert("RGB"), t, cfg["titles"], cfg["style"], cfg.get("font"))
+        img = draw_titles(Image.open(out).convert("RGB"), t, cfg["titles"], cfg["style"], cfg.get("font"), cfg["_accent"])
         img.save(out)
         print(f"[stepreel] 静帧 {out}")
 
@@ -231,6 +232,8 @@ def main(argv=None):
     s = sub.add_parser("still"); common(s); s.add_argument("--at", type=float, nargs="+", default=[1.0, 4.0])
     s.set_defaults(fn=cmd_still)
     s = sub.add_parser("blend"); common(s); s.set_defaults(fn=cmd_blend)
+    s = sub.add_parser("ui", help="打开网页界面"); s.add_argument("--port", type=int, default=7860)
+    s.add_argument("--no-browser", action="store_true"); s.set_defaults(fn=lambda a: __import__("stepreel.ui", fromlist=["serve"]).serve(a.port, not a.no_browser))
     args = p.parse_args(argv)
     args.fn(args)
 

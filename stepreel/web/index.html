@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>stepreel 爆炸动画工作台</title>
+<style>
+:root{
+  --paper:#E9ECE7; --sheet:#F6F7F3; --ink:#1B2230; --graphite:#5B6472; --rule:#B7BEC6; --rule-soft:#D5DAD6;
+  --signal:#E8501A; --trace:#2F6FA3; --ok:#2E7D4F; --err:#B3261E;
+  --latin:"Bahnschrift","DIN Alternate","Barlow","Segoe UI",sans-serif;
+  --cjk:"Microsoft YaHei UI","Microsoft YaHei","PingFang SC","Noto Sans CJK SC","Source Han Sans SC",sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%}
+body{background:var(--paper);color:var(--ink);font:14px/1.55 var(--latin),var(--cjk);font-variant-numeric:tabular-nums}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--trace);outline-offset:2px}
+
+/* title strip: reads like the title block of a drawing */
+.strip{display:grid;grid-template-columns:auto 1fr auto auto;border-bottom:1.5px solid var(--ink);background:var(--sheet)}
+.strip>div{padding:10px 18px;border-right:1px solid var(--rule)}
+.strip>div:last-child{border-right:0}
+.brand{font:600 22px/1 var(--latin);letter-spacing:-.01em;display:flex;align-items:center;gap:10px}
+.brand svg{flex:none}
+.cell-k{display:block;font-size:11px;color:var(--graphite);line-height:1.2}
+.cell-v{display:block;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.app{display:grid;grid-template-columns:380px 1fr;height:calc(100% - 59px)}
+.form{border-right:1.5px solid var(--ink);background:var(--sheet);overflow:auto}
+.main{overflow:auto;padding:22px 28px 40px}
+
+/* form = stacked title-block cells */
+.sec{border-bottom:1px solid var(--rule)}
+.sec h2{margin:0;padding:12px 18px 0;font:600 15px/1.3 var(--latin),var(--cjk);display:flex;gap:10px;align-items:baseline}
+.sec h2 b{font:600 13px var(--latin);color:var(--signal);width:14px}
+.sec .body{padding:10px 18px 16px}
+.row{display:grid;grid-template-columns:72px 1fr 44px;align-items:center;gap:10px;margin:6px 0}
+.row label{color:var(--graphite);font-size:13px}
+.row output{text-align:right;font-size:13px}
+input[type=range]{width:100%;accent-color:var(--ink)}
+.field{display:block;margin:8px 0}
+.field span{display:block;font-size:12px;color:var(--graphite);margin-bottom:3px}
+.field input[type=text]{width:100%;padding:7px 9px;border:1px solid var(--rule);background:#fff;border-radius:2px}
+.field input[type=text]:focus{border-color:var(--trace)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;border:1px solid var(--ink);border-radius:2px;overflow:hidden}
+.seg button{border:0;border-right:1px solid var(--ink);background:#fff;padding:7px 4px;cursor:pointer;font-size:13px}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed=true]{background:var(--ink);color:#fff}
+
+.styles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.sw{border:1px solid var(--rule);background:#fff;padding:0;cursor:pointer;text-align:left;border-radius:2px}
+.sw i{display:block;height:54px;position:relative}
+.sw i::after{content:"";position:absolute;right:8px;bottom:8px;width:10px;height:10px;border-radius:50%;background:var(--dot)}
+.sw span{display:block;padding:5px 7px;font-size:12px}
+.sw[aria-pressed=true]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.accent{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:13px;color:var(--graphite)}
+.accent input{width:34px;height:24px;border:1px solid var(--rule);padding:0;background:none}
+
+.actions{padding:16px 18px 22px;display:grid;gap:8px}
+.btn{border:1.5px solid var(--ink);background:#fff;padding:10px 12px;border-radius:2px;cursor:pointer;font-weight:600;font-size:15px}
+.btn.primary{background:var(--signal);border-color:var(--signal);color:#fff}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.hint{font-size:12px;color:var(--graphite);margin:0}
+
+/* viewer = drawing sheet frame with zone markers */
+.frame{position:relative;padding:18px;border:1.5px solid var(--ink);background:var(--sheet)}
+.zones-x,.zones-y{position:absolute;display:flex;color:var(--graphite);font:11px var(--latin)}
+.zones-x{left:18px;right:18px;top:2px;justify-content:space-around}
+.zones-y{top:18px;bottom:18px;left:4px;flex-direction:column;justify-content:space-around}
+.stage{position:relative;aspect-ratio:16/9;background:#14171d;border:1px solid var(--ink);display:grid;place-items:center;overflow:hidden}
+.stage.vertical{aspect-ratio:9/16;max-height:72vh;margin:0 auto}
+.stage video,.stage img{width:100%;height:100%;object-fit:contain;display:block}
+.drop{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:#C9CED6;cursor:pointer;background:
+  repeating-linear-gradient(0deg,transparent 0 39px,rgba(255,255,255,.04) 39px 40px),
+  repeating-linear-gradient(90deg,transparent 0 39px,rgba(255,255,255,.04) 39px 40px),#14171d}
+.drop.over{background-color:#1d2330;outline:2px dashed var(--signal);outline-offset:-14px}
+.drop strong{display:block;font-size:22px;color:#fff;font-weight:600;margin-bottom:6px}
+.drop small{font-size:13px}
+.progress{height:6px;background:var(--rule-soft);margin-top:12px;position:relative}
+.progress i{position:absolute;left:0;top:0;bottom:0;background:var(--signal);width:0;transition:width .4s}
+.status{display:flex;justify-content:space-between;gap:12px;margin-top:8px;font-size:13px;color:var(--graphite);min-height:20px}
+.status b{color:var(--ink)}
+.status button{border:0;background:none;color:var(--err);cursor:pointer;padding:0}
+.viewtabs{display:flex;gap:14px;margin-top:6px;font-size:13px}
+.viewtabs button{border:0;background:none;padding:2px 0;cursor:pointer;color:var(--graphite);border-bottom:2px solid transparent}
+.viewtabs button[aria-pressed=true]{color:var(--ink);border-color:var(--ink)}
+
+h3{font:600 15px var(--latin),var(--cjk);margin:28px 0 8px}
+table{width:100%;border-collapse:collapse;background:var(--sheet);border:1.5px solid var(--ink);font-size:13px}
+th,td{border:1px solid var(--rule);padding:5px 8px;text-align:left;vertical-align:middle}
+th{white-space:nowrap;font-weight:600;background:#fff;color:var(--graphite);font-size:12px}
+td.n{text-align:right;width:44px}
+td.idx{width:40px;color:var(--graphite);text-align:center}
+td select{border:1px solid var(--rule);background:#fff;padding:3px 4px;border-radius:2px;max-width:150px}
+td .chip{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px;border:1px solid rgba(0,0,0,.2)}
+td.c{text-align:center;width:72px}
+.muted{color:var(--graphite)}
+.versions td a{color:var(--trace)}
+.err{background:#fff;border:1.5px solid var(--err);color:var(--err);padding:10px 12px;margin-top:12px;white-space:pre-wrap;font-size:12px;max-height:180px;overflow:auto}
+
+@media (max-width:900px){
+  .app{grid-template-columns:1fr;height:auto}
+  .form{border-right:0;border-bottom:1.5px solid var(--ink)}
+  .strip{grid-template-columns:1fr 1fr}
+  .main{padding:16px}
+}
+@media (prefers-reduced-motion:reduce){.progress i{transition:none}}
+</style>
+</head>
+<body>
+
+<header class="strip">
+  <div class="brand">
+    <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><rect x="2" y="15" width="22" height="7" fill="none" stroke="#1B2230" stroke-width="1.6"/><rect x="5" y="8" width="16" height="4" fill="#E8501A"/><rect x="8" y="2" width="10" height="3" fill="none" stroke="#1B2230" stroke-width="1.6"/></svg>
+    stepreel
+  </div>
+  <div><span class="cell-k">模型</span><span class="cell-v" id="hdName">未选择</span></div>
+  <div><span class="cell-k">零件</span><span class="cell-v" id="hdParts">—</span></div>
+  <div><span class="cell-k">爆炸方向</span><span class="cell-v" id="hdAxis">—</span></div>
+</header>
+
+<div class="app">
+  <aside class="form" aria-label="设置">
+    <section class="sec">
+      <h2><b>1</b>选择模型</h2>
+      <div class="body">
+        <button class="btn" id="pick" style="width:100%">选择 STEP 文件</button>
+        <p class="hint" style="margin-top:8px">在 SolidWorks、Fusion、Creo 里把装配体另存为 .step 即可。零件名写清楚（如“碳纤维板”“M3 螺钉”），材质会自动配得更准。</p>
+        <input type="file" id="file" accept=".step,.stp,.STEP,.STP" hidden>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2><b>2</b>风格</h2>
+      <div class="body">
+        <div class="styles" id="styles">
+          <button class="sw" data-style="dark-studio" aria-pressed="true" style="--dot:#F25213"><i style="background:radial-gradient(circle at 40% 70%,#3b4656,#07080b 70%)"></i><span>暗场影棚</span></button>
+          <button class="sw" data-style="clean-white" aria-pressed="false" style="--dot:#2F6BFF"><i style="background:radial-gradient(circle at 40% 70%,#ffffff,#d4d7dc 75%)"></i><span>白色影棚</span></button>
+          <button class="sw" data-style="tech-blue" aria-pressed="false" style="--dot:#00C2FF"><i style="background:radial-gradient(circle at 40% 70%,#123056,#01050d 70%)"></i><span>科技蓝</span></button>
+        </div>
+        <label class="accent">主色 <input type="color" id="accent" value="#F25213"> <span id="accentHex">#F25213</span>，用于塑料件和副标题</label>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2><b>3</b>动画</h2>
+      <div class="body">
+        <div class="row"><label for="spread">炸开程度</label><input type="range" id="spread" min="0.5" max="2" step="0.1" value="1"><output data-for="spread"></output></div>
+        <div class="row"><label for="speed">节奏</label><input type="range" id="speed" min="0.6" max="1.6" step="0.1" value="1"><output data-for="speed"></output></div>
+        <div class="row"><label for="zoom">镜头距离</label><input type="range" id="zoom" min="0.7" max="1.5" step="0.05" value="1"><output data-for="zoom"></output></div>
+        <div class="row"><label for="elevation">俯视角</label><input type="range" id="elevation" min="5" max="70" step="1" value="28"><output data-for="elevation"></output></div>
+        <div class="row" style="grid-template-columns:72px 1fr"><label>拆解方式</label>
+          <div class="seg" id="mode"><button data-v="layers" aria-pressed="true">分层拆开</button><button data-v="radial" aria-pressed="false">向四周散开</button></div></div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2><b>4</b>文字</h2>
+      <div class="body">
+        <label class="field"><span>产品名（开场大标题）</span><input type="text" id="tName" placeholder="例：壁面起降臂 V2"></label>
+        <label class="field"><span>副标题</span><input type="text" id="tSub" placeholder="例：WALL-MOUNTED LIFT ARM"></label>
+        <div class="pair">
+          <label class="field"><span>亮点数字</span><input type="text" id="tStat" placeholder="165"></label>
+          <label class="field"><span>数字说明</span><input type="text" id="tStatCap" placeholder="个零件"></label>
+        </div>
+        <label class="field"><span>片尾一句话</span><input type="text" id="tEnd" placeholder="例：SolidWorks 建模 · 代码渲染"></label>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2><b>5</b>出片</h2>
+      <div class="body">
+        <div class="row" style="grid-template-columns:72px 1fr"><label>画幅</label>
+          <div class="seg" id="aspect"><button data-v="landscape" aria-pressed="true">横屏 16:9</button><button data-v="vertical" aria-pressed="false">竖屏 9:16</button></div></div>
+        <div class="row" style="grid-template-columns:72px 1fr"><label>高清画质</label>
+          <div class="seg" id="quality"><button data-v="standard" aria-pressed="true">720p 较快</button><button data-v="high" aria-pressed="false">1080p 最清晰</button></div></div>
+        <div class="row" style="grid-template-columns:72px 1fr"><label>声音</label>
+          <div class="seg" id="audio"><button data-v="on" aria-pressed="true">配乐和音效</button><button data-v="off" aria-pressed="false">静音</button></div></div>
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="btnPreview" disabled>生成预览</button>
+        <button class="btn" id="btnRender" disabled>导出高清视频</button>
+        <p class="hint">预览是低清草稿，几分钟出结果，先看节奏和构图。满意后再导出高清，时间取决于电脑显卡。</p>
+      </div>
+    </section>
+  </aside>
+
+  <main class="main">
+    <div class="frame">
+      <div class="zones-x" aria-hidden="true"><span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span></div>
+      <div class="zones-y" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span></div>
+      <div class="stage" id="stage">
+        <div class="drop" id="drop" tabindex="0" role="button" aria-label="选择或拖入 STEP 文件">
+          <div><strong>把 STEP 文件拖到这里</strong><small>或点击选择文件。模型只在你自己的电脑上处理，不会上传到网上。</small></div>
+        </div>
+      </div>
+      <div class="progress" aria-hidden="true"><i id="bar"></i></div>
+      <div class="status" id="status"><span id="statusText">还没有模型</span><span id="statusRight"></span></div>
+      <div class="viewtabs" id="viewtabs" hidden><button data-v="video" aria-pressed="true">视频</button><button data-v="sheet" aria-pressed="false">8 帧总览</button></div>
+      <div class="err" id="err" hidden></div>
+    </div>
+
+    <h3 id="verTitle" hidden>出片记录</h3>
+    <table class="versions" id="versions" hidden><thead><tr><th>类型</th><th>完成时间</th><th>用时</th><th></th></tr></thead><tbody></tbody></table>
+
+    <h3 id="bomTitle" hidden>零件明细表</h3>
+    <p class="hint" id="bomHint" hidden>材质按零件名自动判断，可以逐项修改。勾选“最后飞出”的零件会在其他零件之后单独飞出，适合突出电机、核心模块。</p>
+    <table id="bom" hidden>
+      <thead><tr><th>序号</th><th>零件名称</th><th>数量</th><th>材质</th><th>最后飞出</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </main>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const MATS = [["auto","自动"],["carbon","碳纤维"],["steel","钢"],["aluminum","铝"],["brass","黄铜"],["nylon","尼龙"],
+  ["rubber","橡胶"],["pcb","电路板"],["accent","主色塑料"],["black","黑色塑料"],["white","白色塑料"],["anodized","阳极黑铝"]];
+const CHIP = {carbon:"#202226",steel:"#B9BCC2",aluminum:"#D4D7DC",brass:"#C9963F",nylon:"#E3DFD3",rubber:"#111",pcb:"#1E5B36",black:"#151517",white:"#E8E6E1",anodized:"#2B2D31"};
+const STYLE_ACCENT = {"dark-studio":"#F25213","clean-white":"#2F6BFF","tech-blue":"#00C2FF"};
+let project = null, current = null, poll = null, view = "video", accentTouched = false;
+const versions = [];
+
+function seg(id){ const el=$(id); el.addEventListener("click",e=>{const b=e.target.closest("button"); if(!b) return;
+  el.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed", x===b)); if(id==="#aspect") setAspect();}); }
+const segVal = id => $(id+' [aria-pressed="true"]').dataset.v;
+["#mode","#aspect","#quality","#audio"].forEach(seg);
+function setAspect(){ $("#stage").classList.toggle("vertical", segVal("#aspect")==="vertical"); }
+
+document.querySelectorAll('input[type=range]').forEach(r=>{
+  const o=document.querySelector(`output[data-for="${r.id}"]`);
+  const fmt=()=>o.textContent = r.id==="elevation" ? r.value+"°" : "×"+Number(r.value).toFixed(r.step<0.1?2:1);
+  r.addEventListener("input",fmt); fmt();
+});
+$("#styles").addEventListener("click",e=>{const b=e.target.closest(".sw"); if(!b) return;
+  document.querySelectorAll(".sw").forEach(x=>x.setAttribute("aria-pressed",x===b));
+  if(!accentTouched){ $("#accent").value=STYLE_ACCENT[b.dataset.style]; $("#accentHex").textContent=$("#accent").value; }});
+$("#accent").addEventListener("input",e=>{accentTouched=true; $("#accentHex").textContent=e.target.value.toUpperCase();});
+
+// ---------- upload
+$("#pick").onclick = () => $("#file").click();
+$("#drop").onclick = () => $("#file").click();
+$("#drop").onkeydown = e => { if(e.key==="Enter"||e.key===" ") $("#file").click(); };
+$("#file").onchange = e => e.target.files[0] && upload(e.target.files[0]);
+["dragenter","dragover"].forEach(t=>document.addEventListener(t,e=>{e.preventDefault(); $("#drop").classList.add("over");}));
+["dragleave","drop"].forEach(t=>document.addEventListener(t,e=>{e.preventDefault(); if(t==="drop"||e.target===$("#drop")) $("#drop").classList.remove("over");}));
+document.addEventListener("drop",e=>{const f=e.dataTransfer.files[0]; if(f) upload(f);});
+
+async function upload(f){
+  if(!/\.(step|stp)$/i.test(f.name)){ showErr("请选择 .step 或 .stp 文件。在 CAD 软件里用“另存为”导出 STEP 格式。"); return; }
+  hideErr(); setStatus(`正在读取 ${f.name}，零件多的模型需要半分钟左右…`, ""); setBar(null);
+  $("#btnPreview").disabled = $("#btnRender").disabled = true;
+  const r = await fetch("/api/upload?name="+encodeURIComponent(f.name),{method:"POST",body:f});
+  const d = await r.json();
+  if(!r.ok){ setStatus("读取失败",""); showErr(d.error); return; }
+  project = d; renderProject(); setBar(0);
+  setStatus(`已读取 ${d.instances} 个零件，可以生成预览了`, "");
+  $("#btnPreview").disabled = $("#btnRender").disabled = false;
+  if(!$("#tStat").value){ $("#tStat").placeholder = d.instances; }
+}
+
+function matLabel(m){ if(!m) return ["自动",null]; if(typeof m==="string") return [MATS.find(x=>x[0]===m)?.[1]||m, CHIP[m]];
+  return ["塑料", m.color==="ACCENT"||!m.color ? $("#accent").value : m.color]; }
+
+function renderProject(){
+  $("#hdName").textContent = project.name;
+  $("#hdParts").textContent = `${project.instances} 个 · ${project.unique_parts} 种`;
+  $("#hdAxis").textContent = {x:"沿 X 轴",y:"沿 Y 轴",z:"沿 Z 轴"}[project.auto_explode_axis] || "自动";
+  const tb = $("#bom tbody"); tb.innerHTML = "";
+  project.parts.forEach((p,i)=>{
+    const [lab,col] = matLabel(p.material);
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td class="idx">${i+1}</td><td></td><td class="n">${p.count}</td>
+      <td><span class="chip" style="background:${col||"transparent"}"></span><select aria-label="材质"></select></td>
+      <td class="c"><input type="checkbox" aria-label="最后飞出"></td>`;
+    tr.children[1].textContent = p.name;
+    const sel = tr.querySelector("select");
+    MATS.forEach(([v,t])=>{const o=document.createElement("option"); o.value=v; o.textContent = v==="auto" ? `自动（${lab}）` : t; sel.append(o);});
+    sel.onchange = () => { const v=sel.value; tr.querySelector(".chip").style.background = v==="auto" ? (col||"transparent") : (v==="accent"?$("#accent").value:CHIP[v]); };
+    sel.dataset.name = p.name; tr.querySelector("input").dataset.name = p.name;
+    tb.append(tr);
+  });
+  ["#bom","#bomTitle","#bomHint"].forEach(s=>$(s).hidden=false);
+  $("#drop").querySelector("strong").textContent = "模型已就绪";
+  $("#drop").querySelector("small").textContent = "点左边“生成预览”看效果。想换模型可以再拖一个 STEP 进来。";
+}
+
+function form(){
+  const materials={}, last={};
+  document.querySelectorAll("#bom select").forEach(s=>{ if(s.value!=="auto") materials[s.dataset.name]=s.value; });
+  document.querySelectorAll("#bom input[type=checkbox]").forEach(c=>{ if(c.checked) last[c.dataset.name]=true; });
+  return { style: document.querySelector('.sw[aria-pressed="true"]').dataset.style,
+    accent: $("#accent").value, spread:+$("#spread").value, speed:+$("#speed").value, zoom:+$("#zoom").value,
+    elevation:+$("#elevation").value, mode:segVal("#mode"), aspect:segVal("#aspect"), quality:segVal("#quality"),
+    audio: segVal("#audio")==="on", materials, last,
+    titles:{name:$("#tName").value.trim(), sub:$("#tSub").value.trim(), stat:$("#tStat").value.trim(),
+            statcap:$("#tStatCap").value.trim(), end:$("#tEnd").value.trim()} };
+}
+
+// ---------- jobs
+$("#btnPreview").onclick = () => start("preview");
+$("#btnRender").onclick = () => start("render");
+async function start(mode){
+  if(!project) return; hideErr();
+  const r = await fetch("/api/job",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({project:project.id, mode, form:form()})});
+  const j = await r.json(); if(!r.ok){ showErr(j.error); return; }
+  current = j; track();
+}
+function track(){
+  clearInterval(poll);
+  const tick = async () => {
+    const j = await (await fetch("/api/job/"+current.id)).json(); current = j;
+    const label = j.mode==="preview" ? "预览" : "高清视频";
+    const pct = j.total ? Math.round(100*j.done/j.total) : 0;
+    setBar(j.status==="done" ? 100 : pct);
+    let right = "";
+    if(j.status==="running" && j.total && j.done>2 && j.started){
+      const el = Date.now()/1000 - j.started, left = el/j.done*(j.total-j.done);
+      right = `剩余约 ${fmtTime(left)}`;
+    }
+    setStatus(`<b>${label}</b> · ${j.phase}${j.total?` ${j.done} / ${j.total} 帧`:""}`, right,
+              j.status==="running"||j.status==="queued");
+    if(j.status==="done"){ clearInterval(poll); show(j); addVersion(j); setStatus(`<b>${label}</b>已完成`,`用时 ${fmtTime(j.finished-j.started)}`); }
+    if(j.status==="error"){ clearInterval(poll); setStatus(`<b>${label}</b>失败`,""); showErr(j.log||"未知错误"); }
+    if(j.status==="cancelled"){ clearInterval(poll); setStatus("已取消",""); setBar(0); }
+  };
+  tick(); poll = setInterval(tick, 1000);
+}
+function show(j){
+  const st = $("#stage"); st.querySelectorAll("video,img").forEach(x=>x.remove()); $("#drop").hidden = true;
+  const base = `/files/${j.project}/`;
+  if(view==="sheet" && j.sheet){ const im=new Image(); im.src=base+j.sheet+"?t="+Date.now(); im.alt="8 帧总览"; st.append(im); }
+  else { const v=document.createElement("video"); v.src=base+j.output+"?t="+Date.now(); v.controls=v.autoplay=v.loop=true; v.playsInline=true; st.append(v); }
+  $("#viewtabs").hidden = !j.sheet; st.dataset.job = j.id;
+}
+$("#viewtabs").onclick = e => { const b=e.target.closest("button"); if(!b) return; view=b.dataset.v;
+  $("#viewtabs").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b)); if(current) show(current); };
+
+function addVersion(j){
+  versions.unshift(j); $("#versions").hidden = $("#verTitle").hidden = false;
+  const tb = $("#versions tbody"); tb.innerHTML = "";
+  versions.forEach(v=>{ const tr=document.createElement("tr"); const d=new Date(v.finished*1000);
+    tr.innerHTML = `<td>${v.mode==="preview"?"预览":"高清"}</td><td>${d.toLocaleTimeString()}</td><td>${fmtTime(v.finished-v.started)}</td>
+      <td><a href="#" data-id="${v.id}">播放</a>　<a href="/files/${v.project}/${v.output}?download=1" download>下载</a></td>`;
+    tb.append(tr); });
+}
+$("#versions").onclick = e => { const a=e.target.closest("a[data-id]"); if(!a) return; e.preventDefault();
+  const v=versions.find(x=>x.id===a.dataset.id); view="video"; show(v); };
+
+function setStatus(html,right,cancellable){
+  $("#statusText").innerHTML = html;
+  $("#statusRight").innerHTML = (right||"") + (cancellable ? `　<button id="cancel">取消</button>` : "");
+  const c=$("#cancel"); if(c) c.onclick = () => fetch(`/api/job/${current.id}/cancel`,{method:"POST"});
+}
+function setBar(p){ $("#bar").style.width = p==null ? "0" : p+"%"; }
+function fmtTime(s){ s=Math.max(0,Math.round(s)); return s<60 ? s+" 秒" : Math.floor(s/60)+" 分 "+(s%60)+" 秒"; }
+function showErr(t){ $("#err").textContent=t; $("#err").hidden=false; }
+function hideErr(){ $("#err").hidden=true; }
+</script>
+</body>
+</html>

@@ -50,7 +50,7 @@ def _font(path, size):
     return ImageFont.truetype(path, size) if path else ImageFont.load_default(size)
 
 
-def draw_titles(img, t, titles, style, font_cfg):
+def draw_titles(img, t, titles, style, font_cfg, accent=None):
     if not titles:
         return img
     W, H = img.size
@@ -71,7 +71,7 @@ def draw_titles(img, t, titles, style, font_cfg):
             lines = [(ti["text"], _font(fb, int(110 * u)), st["text"]),
                      (ti.get("caption", ""), _font(fr, int(32 * u)), st["text_dim"])]
         elif kind == "subtitle":
-            lines = [(ti["text"], _font(fr, int(28 * u)), st["accent"])]
+            lines = [(ti["text"], _font(fr, int(28 * u)), accent or st["accent"])]
         elif kind == "caption":
             lines = [(ti["text"], _font(fr, int(30 * u)), st["text_dim"])]
         else:

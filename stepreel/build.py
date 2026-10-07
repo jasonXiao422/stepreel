@@ -10,9 +10,26 @@ from .config import STYLES
 
 
 # ---------------------------------------------------------------- import
+class _quiet:
+    """Silence C-level stdout/stderr (Blender importer logs one line per part)."""
+    def __enter__(self):
+        import os, sys
+        sys.stdout.flush(); sys.stderr.flush()
+        self.saved = [os.dup(1), os.dup(2)]
+        self.null = os.open(os.devnull, os.O_WRONLY)
+        os.dup2(self.null, 1); os.dup2(self.null, 2)
+    def __exit__(self, *a):
+        import os, sys
+        sys.stdout.flush(); sys.stderr.flush()
+        os.dup2(self.saved[0], 1); os.dup2(self.saved[1], 2)
+        for f in self.saved + [self.null]:
+            os.close(f)
+
+
 def load_parts(glb, rotate_deg=(0, 0, 0)):
-    bpy.ops.wm.read_factory_settings(use_empty=True)
-    bpy.ops.import_scene.gltf(filepath=glb)
+    with _quiet():
+        bpy.ops.wm.read_factory_settings(use_empty=True)
+        bpy.ops.import_scene.gltf(filepath=glb)
     parts = [o for o in bpy.data.objects if o.type == "MESH"]
     if not parts:
         raise SystemExit("STEP 里没有读到任何实体零件")

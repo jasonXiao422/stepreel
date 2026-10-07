@@ -15,7 +15,16 @@ stepreel render 我的装配体.STEP
 - 一个 YAML 文件微调一切；也可以导出 .blend 用 Blender 手动精修
 - 自带 Claude Code skill：用中文描述想要的效果，AI 帮你改配置
 
-## 安装
+## 最简单的用法：网页界面
+
+1. 下载并解压本项目
+2. **Windows**：双击 `start-stepreel.bat`　**macOS**：双击 `start-stepreel.command`
+3. 第一次会自动安装（约 1 GB，几分钟），之后浏览器自动打开界面
+4. 拖入 STEP 文件，选风格、填标题，点「生成预览」，满意后点「导出高清视频」
+
+不需要会写代码，也不需要打开终端。模型只在你自己的电脑上处理，不会上传到网上。
+
+## 命令行安装
 
 只需要先装 [uv](https://docs.astral.sh/uv/)（一行命令），然后：
 
@@ -42,6 +51,7 @@ stepreel render 装配体.STEP      # 正式成片 out.mp4
 stepreel init --style clean-white --vertical   # 白底风格 + 竖屏（抖音 / 小红书）
 stepreel still 装配体.STEP --at 1 4.5           # 只渲染两张高清静帧，检查质感
 stepreel blend 装配体.STEP -o scene.blend      # 导出场景，用 Blender 手动精修
+stepreel ui                                    # 打开网页界面
 ```
 
 ## 配置示例
