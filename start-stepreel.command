@@ -1,7 +1,7 @@
 #!/bin/bash
 # macOS / Linux one-click launcher (tries China mirrors first, then official sources)
 cd "$(dirname "$0")"
-VER=0.3.2
+VER=0.3.3
 MARK="$HOME/.stepreel-$VER"
 export PATH="$HOME/.local/bin:$PATH"
 export UV_HTTP_TIMEOUT=600

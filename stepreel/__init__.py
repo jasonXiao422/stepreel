@@ -3,4 +3,4 @@
 Copyright (C) 2026 Jason Xiao
 Licensed under the GNU General Public License v3.0 or later. See LICENSE.
 """
-__version__ = "0.3.2"
+__version__ = "0.3.3"
