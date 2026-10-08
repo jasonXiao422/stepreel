@@ -1,5 +1,9 @@
 ﻿stepreel
-Copyright (C) 2026 Jason Xiao
+Copyright (C) 2026 Jason Xiao（杰森学长）
+
+作者 / Author：杰森学长（Jason Xiao）
+抖音：杰森学长    GitHub：https://github.com/jasonXiao422/stepreel
+stepreel 由杰森学长独立创建并维护。
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -10,6 +14,18 @@ version. See the LICENSE file for the full text.
 你可以使用、修改、再分发甚至出售本程序，但再分发时必须附带完整源代码，
 并继续使用 GPL-3.0 协议。完整协议文本见 LICENSE 文件。
 使用本程序生成的视频归使用者所有，不受本协议限制。
+
+附加条款（依据 GPL-3.0 第 7 条 b 款）
+--------------------------------------------------
+转送本程序或其修改版本时，必须保留以下作者署名，不得删除或改成他人：
+  1. 本 NOTICE.txt 文件中的作者信息；
+  2. 软件界面中显示的「作者 杰森学长」字样。
+修改版本须标明已被修改，不得让人误以为是原作者发布的版本。
+
+Additional term (GPL-3.0 section 7(b)): anyone conveying this program or a
+modified version must preserve the author attribution "杰森学长 (Jason Xiao)"
+in this NOTICE file and in the program's interface, and must mark modified
+versions as changed.
 
 
 第三方组件

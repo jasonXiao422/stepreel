@@ -534,7 +534,7 @@ function renderTour(){
 $("#tourBtn").onclick = startTour;
 
 // ---------- version / update check
-fetch("/api/version").then(r=>r.json()).then(v=>{ $("#ver").textContent = `stepreel v${v.current}`; }).catch(()=>{});
+fetch("/api/version").then(r=>r.json()).then(v=>{ $("#ver").textContent = `stepreel v${v.current} · 作者 杰森学长（Jason Xiao）`; }).catch(()=>{});
 
 // ---------- upload
 $("#pick").onclick = () => $("#file").click();

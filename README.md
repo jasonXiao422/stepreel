@@ -3,6 +3,8 @@
 **把 CAD 装配体（STEP）一键变成产品级爆炸动画。**
 Turn a STEP assembly into a studio-quality exploded-view video with one command.
 
+作者：**杰森学长（Jason Xiao）** · 抖音「杰森学长」 · 由作者独立创建并持续更新
+
 ```bash
 stepreel render 我的装配体.STEP
 ```
@@ -203,6 +205,8 @@ git push
 
 ## 协议 License
 
-GPL-3.0-or-later。可以自由使用、修改、再分发和出售，再分发时须附带源码并保持同一协议。
+GPL-3.0-or-later，Copyright (C) 2026 杰森学长（Jason Xiao）。
+可以自由使用、修改、再分发和出售，再分发时须附带源码并保持同一协议。
+依据 GPL-3.0 第 7 条附加一项要求：再分发时必须保留作者署名「杰森学长（Jason Xiao）」，修改版须注明已修改，详见 `NOTICE.txt`。
 本项目依赖 Blender（GPL）等开源组件，第三方组件清单见 `NOTICE.txt`。
 用本工具生成的视频归使用者所有，可商用。

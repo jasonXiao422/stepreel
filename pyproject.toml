@@ -1,9 +1,10 @@
 [project]
 name = "stepreel"
-version = "0.5.3"
+version = "0.5.4"
 description = "Turn a CAD assembly (STEP) into a studio-quality exploded-view video with one command."
 readme = "README.md"
 license = { text = "GPL-3.0-or-later" }
+authors = [{ name = "杰森学长 (Jason Xiao)" }]
 requires-python = ">=3.11,<3.12"
 dependencies = [
   "bpy==5.0.1",
