@@ -27,7 +27,8 @@ button,input,select{font:inherit;color:inherit}
 .brand svg{flex:none}
 .cell-k{display:block;font-size:11px;color:var(--graphite);line-height:1.2}
 .cell-v{display:block;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.strip .help{display:flex;align-items:center;padding:0 14px}
+.strip .help{display:flex;align-items:center;gap:8px;padding:0 14px}
+#vidCount{display:inline-block;min-width:18px;padding:0 5px;margin-left:4px;border-radius:9px;background:var(--trace,#E8501A);color:#fff;font-size:11px;line-height:18px;text-align:center}
 .linkbtn{border:1px solid var(--ink);background:#fff;padding:6px 12px;border-radius:2px;cursor:pointer;font-size:13px;font-weight:600}
 .linkbtn:hover{background:var(--ink);color:#fff}
 
@@ -191,7 +192,7 @@ td.c{text-align:center;width:72px}
   <div><span class="cell-k">模型</span><span class="cell-v" id="hdName">未选择</span></div>
   <div><span class="cell-k">零件</span><span class="cell-v" id="hdParts">—</span></div>
   <div><span class="cell-k">爆炸方向</span><span class="cell-v" id="hdAxis">—</span></div>
-  <div class="help"><button class="linkbtn" id="tourBtn">使用教程</button></div>
+  <div class="help"><button class="linkbtn" id="myVids" type="button">我的视频 <span id="vidCount">0</span></button> <button class="linkbtn" id="tourBtn">使用教程</button></div>
 </header>
 
 <div class="app">
@@ -301,6 +302,8 @@ td.c{text-align:center;width:72px}
     </div>
 
     <h3 id="verTitle" hidden>出片记录</h3>
+    <p class="hint" id="saveHint" hidden>每个视频导出完成后都自动保存在你的电脑上，刷新网页、关掉网页都不会丢。
+      <button class="linkbtn" id="openHome" type="button">打开保存文件夹</button> <span id="homePath"></span></p>
     <table class="versions" id="versions" hidden><thead><tr><th>类型</th><th>风格</th><th>完成时间</th><th>用时</th><th></th></tr></thead><tbody></tbody></table>
 
     <h3 id="bomTitle" hidden>零件明细表 <i class="tip" tabindex="0" data-tip="每种零件的材质可以单独改。勾选「最后飞出」的零件会在其他零件之后单独登场，适合突出电机、核心模块。">?</i></h3>
@@ -534,7 +537,7 @@ function renderTour(){
 $("#tourBtn").onclick = startTour;
 
 // ---------- version / update check
-fetch("/api/version").then(r=>r.json()).then(v=>{ $("#ver").textContent = `stepreel v${v.current} · 作者 杰森学长（Jason Xiao）`; }).catch(()=>{});
+fetch("/api/version").then(r=>r.json()).then(v=>{ $("#ver").textContent = `stepreel v${v.current} · 作者 杰森学长（Jason Xiao）`; if(v.home) $("#homePath").textContent = v.home; }).catch(()=>{});
 
 // ---------- upload
 $("#pick").onclick = () => $("#file").click();
@@ -605,7 +608,7 @@ $("#btnRender").onclick = () => start("render");
 async function start(mode){
   if(!project) return; hideErr();
   const r = await fetch("/api/job",{method:"POST",headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({project:project.id, mode, form:form()})});
+    body:JSON.stringify({project:project.id, mode, form:form(), label:describe()})});
   const j = await r.json(); if(!r.ok){ showErr(j.error); return; }
   current = j; current.label = describe(); track();
 }
@@ -624,7 +627,7 @@ function track(){
     }
     setStatus(`<b>${label}</b> · ${j.phase}${j.total?` ${j.done} / ${j.total} 帧`:""}`, right,
               j.status==="running"||j.status==="queued");
-    if(j.status==="done"){ clearInterval(poll); show(j); addVersion(j); setStatus(`<b>${label}</b>已完成`,`用时 ${fmtTime(j.finished-j.started)}`); }
+    if(j.status==="done"){ clearInterval(poll); show(j); addVersion(j); setStatus(`<b>${label}</b>已完成，已自动保存到电脑`,`用时 ${fmtTime(j.finished-j.started)}`); }
     if(j.status==="error"){ clearInterval(poll); setStatus(`<b>${label}</b>失败`,""); showErr(j.log||"未知错误"); }
     if(j.status==="cancelled"){ clearInterval(poll); setStatus("已取消",""); setBar(0); }
   };
@@ -641,14 +644,29 @@ $("#viewtabs").onclick = e => { const b=e.target.closest("button"); if(!b) retur
   $("#viewtabs").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b)); if(current) show(current); };
 
 function addVersion(j){
-  versions.unshift(j); $("#versions").hidden = $("#verTitle").hidden = false;
+  const key = x => x.project + "/" + x.output;
+  for(let i=versions.length-1;i>=0;i--) if(key(versions[i])===key(j)) versions.splice(i,1);
+  versions.unshift(j); renderVersions();
+}
+function renderVersions(){
+  const has = versions.length > 0;
+  $("#versions").hidden = $("#verTitle").hidden = $("#saveHint").hidden = !has;
+  $("#vidCount").textContent = versions.length;
   const tb = $("#versions tbody"); tb.innerHTML = "";
   versions.forEach(v=>{ const tr=document.createElement("tr"); const d=new Date(v.finished*1000);
-    tr.innerHTML = `<td>${v.mode==="preview"?"预览":"高清"}</td><td>${esc(v.label||"")}</td><td>${d.toLocaleTimeString()}</td><td>${fmtTime(v.finished-v.started)}</td>
-      <td><a href="#" data-id="${v.id}">播放</a>　<a href="/files/${v.project}/${v.output}?download=1" download>下载</a>${v.clean?`　<a href="/files/${v.project}/${v.clean}?download=1" download>无文字版</a>`:""}</td>`;
+    const when = d.toDateString()===new Date().toDateString() ? d.toLocaleTimeString() : d.toLocaleString();
+    tr.innerHTML = `<td>${v.mode==="preview"?"预览":"高清"}</td><td>${esc(v.label||"")}</td><td>${when}</td><td>${v.started?fmtTime(v.finished-v.started):"—"}</td>
+      <td><a href="#" data-id="${v.id}">播放</a>　<a href="/files/${v.project}/${v.output}?download=1" download>下载</a>${v.clean?`　<a href="/files/${v.project}/${v.clean}?download=1" download>无文字版</a>`:""}　<a href="#" data-open="${v.project}">打开所在文件夹</a></td>`;
     tb.append(tr); });
 }
-$("#versions").onclick = e => { const a=e.target.closest("a[data-id]"); if(!a) return; e.preventDefault();
+fetch("/api/history").then(r=>r.json()).then(list=>{ list.reverse().forEach(v=>{ if(!versions.some(x=>x.project===v.project&&x.output===v.output)) versions.unshift(v); }); renderVersions(); }).catch(()=>{});
+$("#openHome").onclick = () => fetch("/api/open");
+$("#myVids").onclick = () => { if(versions.length) $("#verTitle").scrollIntoView({behavior:"smooth", block:"start"}); else fetch("/api/open"); };
+window.addEventListener("beforeunload", e => {
+  if(current && (current.status==="running" || current.status==="queued")){ e.preventDefault(); e.returnValue = ""; }
+});
+$("#versions").onclick = e => { const o=e.target.closest("a[data-open]"); if(o){ e.preventDefault(); fetch("/api/open?project="+o.dataset.open); return; }
+  const a=e.target.closest("a[data-id]"); if(!a) return; e.preventDefault();
   const v=versions.find(x=>x.id===a.dataset.id); view="video"; show(v); };
 
 function setStatus(html,right,cancellable){

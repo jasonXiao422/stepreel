@@ -231,6 +231,12 @@ def run_job(job):
         return
     if p.returncode == 0 and (pdir / out).exists():
         job.update(status="done", phase="完成", output=out, finished=time.time())
+        try:
+            (pdir / out.replace(".mp4", ".json")).write_text(json.dumps(
+                {"label": job.get("label", ""), "mode": job["mode"], "started": job.get("started"),
+                 "finished": job["finished"]}, ensure_ascii=False), encoding="utf-8")
+        except OSError:
+            pass
         sheet = out.replace(".mp4", "_sheet.png")
         if (pdir / sheet).exists():
             job["sheet"] = sheet
@@ -239,6 +245,48 @@ def run_job(job):
             job["clean"] = clean
     else:
         job.update(status="error", phase="出错", log="\n".join(tail))
+
+
+def history():
+    """Every finished video on disk, newest first, so a page refresh never loses the list."""
+    out = []
+    if not ROOT.exists():
+        return out
+    for pdir in ROOT.iterdir():
+        if not pdir.is_dir():
+            continue
+        try:
+            name = json.loads((pdir / "project.json").read_text(encoding="utf-8")).get("name", pdir.name)
+        except (OSError, ValueError):
+            name = pdir.name
+        for f in pdir.glob("*.mp4"):
+            if f.stem.endswith("_clean") or not re.match(r"(preview|render)_\w+$", f.stem):
+                continue
+            meta = {}
+            try:
+                meta = json.loads(f.with_suffix(".json").read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                pass
+            item = {"id": "h_" + f.stem.split("_")[1], "project": pdir.name, "model": name,
+                    "mode": "preview" if f.stem.startswith("preview") else "render", "output": f.name,
+                    "label": meta.get("label") or name, "finished": meta.get("finished") or f.stat().st_mtime,
+                    "started": meta.get("started"), "path": str(f)}
+            if (pdir / (f.stem + "_clean.mp4")).exists():
+                item["clean"] = f.stem + "_clean.mp4"
+            if (pdir / (f.stem + "_sheet.png")).exists():
+                item["sheet"] = f.stem + "_sheet.png"
+            out.append(item)
+    return sorted(out, key=lambda x: x["finished"], reverse=True)
+
+
+def open_folder(path):
+    path = str(path)
+    if sys.platform.startswith("win"):
+        os.startfile(path)  # noqa
+    elif sys.platform == "darwin":
+        subprocess.Popen(["open", path])
+    else:
+        subprocess.Popen(["xdg-open", path])
 
 
 def public(job):
@@ -315,7 +363,18 @@ class Handler(BaseHTTPRequestHandler):
             if u.path == "/api/library":
                 return self._json(library())
             if u.path == "/api/version":
-                return self._json(version_info())
+                return self._json(dict(version_info(), home=str(ROOT)))
+            if u.path == "/api/history":
+                return self._json(history())
+            if u.path == "/api/open":
+                pid = parse_qs(u.query).get("project", [""])[0]
+                target = project_dir(pid) if pid else ROOT
+                ROOT.mkdir(parents=True, exist_ok=True)
+                try:
+                    open_folder(target)
+                except OSError as e:
+                    return self._json({"ok": False, "path": str(target), "error": str(e)})
+                return self._json({"ok": True, "path": str(target)})
             if u.path == "/api/jobs":
                 return self._json([public(j) for j in sorted(JOBS.values(), key=lambda j: j["created"])])
             if m := re.fullmatch(r"/api/job/(\w+)", u.path):
@@ -379,6 +438,7 @@ class Handler(BaseHTTPRequestHandler):
         jid = uuid.uuid4().hex[:8]
         JOBS[jid] = {"id": jid, "project": body["project"], "mode": mode, "status": "queued",
                      "phase": "排队中", "done": 0, "total": 0, "created": time.time(),
+                     "label": str(body.get("label") or "")[:80],
                      "config": build_config(body.get("form") or {})}
         QUEUE.put(jid)
         self._json(public(JOBS[jid]))
